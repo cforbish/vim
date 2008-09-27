@@ -1,36 +1,58 @@
 
-command! -nargs=0 Versions call s:Versions()
+if (v:version < 600)
+	echo "version 6 or greater of vim required for lxkcommands."
+	finish
+endif
 
-command! Versions call s:Versions()
-nnoremap <unique> <Plug>Versions :Versions<CR>
-nmap <unique> \dr :execute "call DiffVersion()"
+map \db :execute "call DiffWithRevision(\"base\")"
+map \dd :execute "call DiffWithRevision(\"daily\")"
+map \dc :execute "call DiffWithRevision(\"core\")"
+map \dh :execute "call DiffWithRevision(\"head\")"
+map \dm :execute "call DiffWithRevision(\"master\")"
+map \dt :execute "call DiffWithRevision(\"tlver\")"
+map \dy :execute "call DiffWithRevision(\"bdaily\")"
+" map \ds :execute "call DiffSnapshot()"
+" map \dl :execute "call DiffLineRev()"
+" map \dr :execute "call DiffVersion()"
+map \df :vert diffsplit 
+map \do :vert diffsplit %.orig
+map \dq :set lz:if &diff:windo set nodiff fdc=0:wincmd l:clo:endif:set nolz
+map \dw :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
+map \dx :set lz:if &diff:windo bw!:endif:set nolz
+map \dn :set lz:if &diff:windo set nodiff fdc=0:endif:set nolz
+map \d# :vert diffsplit #:windo normal gg
 
-" command! GITAdd call s:GITAdd()
-" nnoremap <unique> <Plug>GITAdd :GITAdd<CR>
-" if !hasmapto('<Plug>GITAdd')
-"   nmap <unique> <Leader>ga <Plug>GITAdd
-" endif
-" amenu <silent> &Plugin.GIT.&Add      <Plug>GITAdd
-
+"------------------------------------------------------------------------------
+" Setup variable to represent slash to use for path names for current OS.
+"------------------------------------------------------------------------------
 if (isdirectory("C:\\"))
 	let g:os_slash="\\"
 else
 	let g:os_slash="/"
 endif
 
+"------------------------------------------------------------------------------
+" Determine a good directory to place temporary files.
+"------------------------------------------------------------------------------
 if (!strlen($VIMTMPDIR))
-	if (isdirectory($VIMHOME . g:os_slash . "vimtmp"))
-		let $VIMTMPDIR = $VIMHOME . g:os_slash . "vimtmp"
-	elseif (isdirectory($VIMHOME . g:os_slash . "tmp"))
-		let $VIMTMPDIR = $VIMHOME . g:os_slash . "tmp"
-	elseif (isdirectory($HOME . g:os_slash . "vimtmp"))
-		let $VIMTMPDIR = $HOME . g:os_slash . "vimtmp"
-	elseif (isdirectory($HOME . g:os_slash . "tmp"))
-		let $VIMTMPDIR = $HOME . g:os_slash . "tmp"
+	if (strlen($VIMHOME))
+		if (isdirectory($VIMHOME . g:os_slash . "vimtmp"))
+			let $VIMTMPDIR = $VIMHOME . g:os_slash . "vimtmp"
+		elseif (isdirectory($VIMHOME . g:os_slash . "tmp"))
+			let $VIMTMPDIR = $VIMHOME . g:os_slash . "tmp"
+		endif
+	elseif (strlen($HOME))
+		if (isdirectory($HOME . g:os_slash . "vimtmp"))
+			let $VIMTMPDIR = $HOME . g:os_slash . "vimtmp"
+		elseif (isdirectory($HOME . g:os_slash . "tmp"))
+			let $VIMTMPDIR = $HOME . g:os_slash . "tmp"
+		else
+			let $VIMTMPDIR = $HOME
+		endif
 	elseif (g:os_slash == "\\")
 		let $VIMTMPDIR = "C:\\WINDOWS\\Temp"
 	else
-		let $VIMTMPDIR = $HOME
+		let $VIMTMPDIR = "~"
 	endif
 endif
 
@@ -40,22 +62,64 @@ endif
 " Simply determine if the command passed in as a:cmd can be run on the current
 " system in the current environment.
 "------------------------------------------------------------------------------
-function! s:CanDo(cmd)
+function! CanDo(cmd)
 	let l:result = system(a:cmd)
 	return !v:shell_error
 endfunction
 
 "------------------------------------------------------------------------------
-" GetTopLevelAbsPathOfFile
+" RevisionTypeOfFile
+"------------------------------------------------------------------------------
+" Get post als revision type for a:filename with is a full path to a file.
+"------------------------------------------------------------------------------
+function! RevisionTypeOfFile(filename)
+	let l:startdir = getcwd()
+	let l:dir = substitute(a:filename, '^\(.*\)\' . g:os_slash . '.*', '\1', "g")
+	let l:file = substitute(a:filename, '^.*\' . g:os_slash . '\(.*\)', '\1', "g")
+	if (strlen(l:dir))
+		execute "cd " . l:dir
+	endif
+	let l:retval = "unknown"
+	if (CanDo("git --version"))
+		" try git first as it is faster of the three.
+		let l:result = system("git ls-files --stage " . l:file . " | head -1")
+		if (strlen(l:result) && match(l:result, '^fatal:\|^error:'))
+			let l:retval = "git"
+		endif
+	endif
+	if ((l:retval == "unknown") && CanDo("svn --version"))
+		" try svn next as it is faster than als.
+		let $MOO_ALWAYS_PASSTHRU = 1
+		"-----------------------------------------------------
+		" Set MOO_ALWAYS_PASSTHRU to get the real svn to
+		" function for the info and not the one used by git.
+		"-----------------------------------------------------
+		let l:result = system("svn info " . a:filename . " | head -1")
+		if (strlen(l:result) && match(l:result, 'Not a versioned resource\|is not a working copy') < 0)
+			let l:retval = "svn"
+		endif
+		let $MOO_ALWAYS_PASSTHRU = ""
+	endif
+	if ((l:retval == "unknown") && (strlen($PROJECT)) && ($PROJECT != "MLS"))
+		let l:result = system("q " . a:filename)
+		if (strlen(l:result) && match(l:result, 'Unable to locate toplevel\|does not exist') < 0)
+			let l:retval = "als"
+		endif
+	endif
+	execute "cd " . l:startdir
+	return l:retval
+endfunction
+
+"------------------------------------------------------------------------------
+" GetTopLevelAbsPathOfPath
 "------------------------------------------------------------------------------
 " try to determine top level path by searching back for either .toplevel or
 " .git at directory of a:filename as full path to file.
 "------------------------------------------------------------------------------
-function! s:GetTopLevelAbsPathOfFile(filename)
+function! GetTopLevelAbsPathOfPath(pathname)
 	let l:startdir = getcwd()
-	let l:dir = substitute(a:filename, '^\(.*\)\' . g:os_slash . '.*', '\1', "g")
-	if (strlen(l:dir))
-		execute "cd " . l:dir
+	if (strlen(a:pathname) && isdirectory(a:pathname))
+      execute "cd " . a:pathname
 	endif
 	let l:svndir = ""
 	let l:lastdir = ""
@@ -82,11 +146,32 @@ function! s:GetTopLevelAbsPathOfFile(filename)
 endfunction
 
 "------------------------------------------------------------------------------
+" GetTopLevelAbsPathOfFile
+"------------------------------------------------------------------------------
+" try to determine top level path by searching back for either .toplevel or
+" .git at directory of a:filename as full path to file.
+"------------------------------------------------------------------------------
+function! GetTopLevelAbsPathOfFile(filename)
+	let l:dir = substitute(a:filename, '^\(.*\)\' . g:os_slash . '.*', '\1', "g")
+   return GetTopLevelAbsPathOfPath(l:dir)
+endfunction
+
+"------------------------------------------------------------------------------
+" GetTopLevelAbsPath
+"------------------------------------------------------------------------------
+" try to determine top level path by searching back for either .toplevel or
+" .git at directory of current file
+"------------------------------------------------------------------------------
+function! GetTopLevelAbsPath()
+	return GetTopLevelAbsPathOfFile(expand("%:p"))
+endfunction
+
+"------------------------------------------------------------------------------
 " BuildTmpFileName
 "------------------------------------------------------------------------------
 " Build a VIMTMPDIR version of file passed in as full path as a:filename
 "------------------------------------------------------------------------------
-function! s:BuildTmpFileName(filename)
+function! BuildTmpFileName(filename)
 	if (g:os_slash == "\\")
 		let l:result = substitute(a:filename, '^\(\a\):', '_\1_', "g")
 	else
@@ -97,90 +182,230 @@ function! s:BuildTmpFileName(filename)
 endfunction
 
 "------------------------------------------------------------------------------
-" RevisionTypeOfFile
+" GitRemoteBranch
 "------------------------------------------------------------------------------
-" Get post als revision type for a:filename with is a full path to a file.
+" Read from the .git/config file which remote branch is the base for the
+" current branch
+" Returns a blank result if none found.
 "------------------------------------------------------------------------------
-function! s:RevisionTypeOfFile(filename)
-	let l:startdir = getcwd()
-	let l:dir = substitute(a:filename, '^\(.*\)\' . g:os_slash . '.*', '\1', "g")
-	if (strlen(l:dir))
-		execute "cd " . l:dir
-	endif
-	let l:retval = "unknown"
-	if (s:CanDo("git --version"))
-		" try git first as it is faster of the three.
-		let l:result = system("git-ls-files --stage " . a:filename . " | head -1")
-		if (strlen(l:result) && match(l:result, '^fatal:\|^error:'))
-			let l:retval = "git"
-		endif
-	endif
-	if ((l:retval == "unknown") && s:CanDo("svn --version"))
-		" try svn next as it is faster than als.
-		let $MOO_ALWAYS_PASSTHRU = 1
-		"-----------------------------------------------------
-		" Set MOO_ALWAYS_PASSTHRU to get the real svn to
-		" function for the info and not the one used by git.
-		"-----------------------------------------------------
-		let l:result = system("svn info " . a:filename . " | head -1")
-		if (strlen(l:result) && match(l:result, 'Not a versioned resource\|is not a working copy') < 0)
-			let l:retval = "svn"
-		endif
-		let $MOO_ALWAYS_PASSTHRU = ""
-	endif
-	if ((l:retval == "unknown") && (strlen($PROJECT)) && ($PROJECT != "MLS"))
-		let l:result = system("q " . a:filename)
-		if (strlen(l:result) && match(l:result, 'Unable to locate toplevel\|does not exist') < 0)
-			let l:retval = "als"
-		endif
-	endif
-	execute "cd " . l:startdir
-	return l:retval
-endfunction
-
-"------------------------------------------------------------------------------
-" RevisionType
-"------------------------------------------------------------------------------
-" Get post als revision type for the current file (either git or svn)
-"------------------------------------------------------------------------------
-function! s:RevisionType()
-	return s:RevisionTypeOfFile(expand("%:p"))
-endfunction
-
-"------------------------------------------------------------------------------
-" Versions
-"------------------------------------------------------------------------------
-" Build a temporary file of versions for current file.
-" This works for either ALS, MLS(SVN) or GIT.
-"------------------------------------------------------------------------------
-function! s:Versions()
+function! GitRemoteBranch(toplevel)
+	let l:lz = &lz
 	set lz
-	let l:fullpath = expand("%:p")
-	let l:revtype = s:RevisionType()
-	let l:tempfile = s:BuildTmpFileName(l:fullpath) . ".versions"
-	execute "vnew " . l:tempfile
+	let l:startdir = getcwd()
+	execute "cd " . a:toplevel
+	let l:rc = ""
+	let l:svninfo = system("git svn info")
+	if (match(l:svninfo, '^svn: \|^Use of uninitialized value'))
+		let l:url = substitute(l:svninfo, '.*URL: \(.\{-}\)\n.*', '\1', "")
+		let l:root = substitute(l:svninfo, '.*Repository Root: \(.\{-}\)\n.*', '\1', "")
+		let l:codeline = substitute(l:url, l:root . '/', '', "")
+		new
+		execute 'sil! r ' a:toplevel . '/.git/config'
+		1
+		let l:result = search('^\tfetch = ' . l:codeline . ':')
+		let l:rc = substitute(getline("."), '.*:refs/remotes/', '', "")
+		bw!
+	endif
+	execute "sil! cd " . l:startdir
+	if (!l:lz)
+		set nolz
+	endif
+	return l:rc
+endfunction
+
+"------------------------------------------------------------------------------
+" BuildFileFromSystemCmd
+"------------------------------------------------------------------------------
+" This function exists because on cygwin system does no honor a '>' character
+" to redirect to a file.
+"------------------------------------------------------------------------------
+function! BuildFileFromSystemCmd(file, command)
+	execute "new " . a:file
 	%d
-	execute "normal iRevisions for file: " . l:fullpath
-	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
-		if (l:revtype == "git")
-			let l:startdir = getcwd()
-			let l:tl = s:GetTopLevelAbsPathOfFile(l:fullpath)
-			if (!strlen(l:tl))
-				echo "Could not determine git toplevel"
-				return
-			endif
-			execute "cd " . l:tl
-			sil! r !git log #
-			execute "cd " . l:startdir
-		else
-			sil! r !svn log #
+	execute "r !" . a:command
+	normal ggdd
+	update | close
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffWithRevisionGit
+"------------------------------------------------------------------------------
+" Get a difference between current file and some
+" version of same file as a:revname using git.
+"------------------------------------------------------------------------------
+function! DiffWithRevisionGit(revname)
+	let l:lz = &lz
+	set lz
+	let l:gitdir = GetTopLevelAbsPath()
+	let l:startdir = getcwd()
+	let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(a:revname, '.*\/', '', 'g')
+	let l:gitfile = expand("%")
+	if (isdirectory("C:\\"))
+		let l:gitfile = substitute(expand("%"), '\\', '/', '')
+	endif
+	let l:errstr = ""
+	let l:revtouse = ""
+	let l:havetmp = 0
+	execute "cd " . l:gitdir
+	if (a:revname == "base")
+      call BuildFileFromSystemCmd(l:tempfile, "git show :" . l:gitfile)
+		let l:havetmp = 1
+	elseif (a:revname == "tlver")
+		let l:svnrev = substitute(system("git svn info"), '.*Revision: \(.\{-}\)\n.*', '\1', "")
+		let l:revtouse = substitute(system("git svn find-rev r" . l:svnrev), '\n', '', '')
+	elseif (a:revname == "daily")
+		let l:revtouse = substitute(GitRemoteBranch(l:gitdir), 'master', 'daily', "")
+	elseif (a:revname == "core")
+		let l:wipurl = substitute(system("git svn info"), '.*URL: \(.\{-}\)\n.*', '\1', "")
+      call BuildFileFromSystemCmd(l:tempfile, "svn cat " . l:wipurl . "/" . l:gitfile)
+      let l:havetmp = 1
+	elseif (a:revname == "master")
+		let l:revtouse = GitRemoteBranch(l:gitdir)
+	elseif (a:revname == "head")
+		let l:revtouse = 'HEAD'
+	elseif (a:revname == "bdaily")
+		let l:revtouse = substitute(GitRemoteBranch(l:gitdir), 'master', 'lastgood', "")
+		if (!match(system("git rev-parse " . l:revtouse), '^fatal:'))
+			let l:revtouse = ""
+			let l:errstr = "current branch does not support bdaily"
 		endif
 	else
-		sil! r !q #
+		let l:revtouse = a:revname
 	endif
-	sil! g//s///g
-	1
-	sil! update
-	set nolz
+	if (strlen(l:revtouse))
+		call BuildFileFromSystemCmd(l:tempfile, "git show " . l:revtouse . ":" . l:gitfile)
+		let l:havetmp = 1
+   endif
+   if (l:havetmp)
+      normal gg0
+      execute "vert diffsplit " . l:tempfile
+      normal hgglgg
+	else
+		if (!strlen(l:errstr))
+			let l:errstr = "cannot determine {sha1} for " . a:revname
+		endif
+	endif
+	execute "sil! cd " . l:startdir
+	if (l:lz)
+		set lz
+	else
+		set nolz
+	endif
+	return l:errstr
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffWithRevisionMls
+"------------------------------------------------------------------------------
+" Get a difference between current file and some
+" version of same file as a:revname using svn and mls.
+"------------------------------------------------------------------------------
+function! DiffWithRevisionMls(revname)
+	let l:lz = &lz
+	set lz
+	let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(a:revname, '.*\/', '', 'g')
+	if (a:revname == "daily")
+		let l:wipurl = system("svn info " . GetTopLevelAbsPath() . " | sed -n 's/URL: //p'")
+		let l:revtouse = substitute(system("svn pg mls:daily " . l:wipurl), '\n', '', "g")
+	elseif (a:revname == "bdaily")
+		let l:wipurl = system("svn info " . GetTopLevelAbsPath() . " | sed -n 's/URL: //p'")
+		let l:revtouse = substitute(system("svn pg mls:bdaily " . l:wipurl), '\n', '', "g")
+	elseif (a:revname == "tlver")
+		let l:systemcmd = "svn info " . GetTopLevelAbsPath() . " | sed -n 's/^Revision: //p'"
+		let l:revtouse = substitute(system(l:systemcmd), '\n', '', '')
+	else
+		if (a:revname == "master")
+			let l:revtouse = "head"
+		elseif (a:revname == "core")
+			let l:revtouse = "head"
+		else
+			let l:revtouse = a:revname
+		endif
+	endif
+	execute "sil! !svn cat -r " . l:revtouse . " " . expand("%:p") . " > " . l:tempfile
+	normal gg0
+	execute "vert diffsplit " . l:tempfile
+	normal hgglgg
+	if (l:lz)
+		set lz
+	else
+		set nolz
+	endif
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffWithRevisionAls
+"------------------------------------------------------------------------------
+" Get a difference between current file and some
+" version of same file as a:revname using old als.
+"------------------------------------------------------------------------------
+function! DiffWithRevisionAls(revname)
+	let l:lz = &lz
+	set lz
+	let l:revtouse = ""
+	if ((a:revname == "bdaily") || (a:revname == "daily") || (a:revname == "base") || (a:revname == "tlver"))
+		let l:revtouse = "daily"
+	elseif ((a:revname == "master") || (a:revname == "head") || (a:revname == "core"))
+		let l:revtouse = "core"
+	endif
+	let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(l:revtouse, '.*\/', '', 'g')
+	if (l:revtouse == "daily")
+		if (isdirectory($DAILY))
+			execute "sil! !cp $DAILY/" . GetTopLevelPath() . " " . l:tempfile
+		else
+			echo "Could not find DAILY(" . $DAILY . ") directory."
+			let l:tempfile = ""
+		endif
+	elseif (l:revtouse == "core")
+		if (isdirectory($CORE))
+			execute "sil! !cp $CORE/" . GetTopLevelPath() . " " . l:tempfile
+		else
+			echo "Could not find CORE(" . $CORE . ") directory."
+			let l:tempfile = ""
+		endif
+	else
+		echo "Could not determine which version to get for " . a:revname
+		let l:tempfile = ""
+	endif
+	if (strlen(l:tempfile))
+		normal gg0
+		execute "vert diffsplit " . l:tempfile
+		normal hgglgg
+	endif
+	if (l:lz)
+		set lz
+	else
+		set nolz
+	endif
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffWithRevision
+"------------------------------------------------------------------------------
+" Get a difference between current file and some version of same
+" file as a:revname using version control system mof current file.
+"------------------------------------------------------------------------------
+function! DiffWithRevision(revname)
+	let l:lz = &lz
+	set lz
+	let l:revtype = RevisionTypeOfFile(expand("%:p"))
+	let l:errstr = ""
+	if (l:revtype == "git")
+		let l:errstr = DiffWithRevisionGit(a:revname)
+	elseif (l:revtype == "svn")
+		let l:errstr = DiffWithRevisionMls(a:revname)
+	elseif (l:revtype == "als")
+		let l:errstr = DiffWithRevisionAls(a:revname)
+	else
+		let l:errstr = "do not know what type of version control handles current file."
+	endif
+	if (strlen(l:errstr))
+		echo l:errstr
+	endif
+	if (l:lz)
+		set lz
+	else
+		set nolz
+	endif
 endfunction
 
