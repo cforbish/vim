@@ -239,14 +239,14 @@ function! DiffWithRevisionGit(revname)
 	let l:gitdir = GetTopLevelAbsPath()
 	let l:startdir = getcwd()
 	let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(a:revname, '.*\/', '', 'g')
-	let l:gitfile = expand("%")
-	if (isdirectory("C:\\"))
-		let l:gitfile = substitute(expand("%"), '\\', '/', '')
-	endif
 	let l:errstr = ""
 	let l:revtouse = ""
 	let l:havetmp = 0
 	execute "cd " . l:gitdir
+	let l:gitfile = expand("%")
+	if (isdirectory("C:\\"))
+		let l:gitfile = substitute(expand("%"), '\\', '/', '')
+	endif
 	if (a:revname == "base")
       call BuildFileFromSystemCmd(l:tempfile, "git show :" . l:gitfile)
 		let l:havetmp = 1
