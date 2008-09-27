@@ -434,10 +434,6 @@ function! Versions()
 	set lz
 	let l:fullpath = expand("%:p")
 	let l:revtype = RevisionType()
-	let l:gitfile = expand("%")
-	if (isdirectory("C:\\"))
-		let l:gitfile = substitute(expand("%"), '\\', '/', '')
-	endif
 	let l:tempfile = BuildTmpFileName(l:fullpath) . ".versions"
 	execute "vnew " . l:tempfile
 	%d
@@ -451,6 +447,10 @@ function! Versions()
 				return
 			endif
 			execute "cd " . l:tl
+			let l:gitfile = expand("#")
+			if (isdirectory("C:\\"))
+				let l:gitfile = substitute(l:gitfile, '\\', '/', '')
+			endif
 			execute "sil! r !git log " . l:gitfile
 			execute "cd " . l:startdir
 		else
