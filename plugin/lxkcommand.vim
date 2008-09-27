@@ -13,7 +13,7 @@ map \dt :execute "call DiffWithRevision(\"tlver\")"
 map \dy :execute "call DiffWithRevision(\"bdaily\")"
 " map \ds :execute "call DiffSnapshot()"
 " map \dl :execute "call DiffLineRev()"
-" map \dr :execute "call DiffVersion()"
+map \dr :execute "call DiffVersion()"
 map \df :vert diffsplit 
 map \do :vert diffsplit %.orig
 map \dq :set lz:if &diff:windo set nodiff fdc=0:wincmd l:clo:endif:set nolz
@@ -21,6 +21,8 @@ map \dw :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
 map \dx :set lz:if &diff:windo bw!:endif:set nolz
 map \dn :set lz:if &diff:windo set nodiff fdc=0:endif:set nolz
 map \d# :vert diffsplit #:windo normal gg
+
+com! -nargs=0 Versions call Versions()
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -108,6 +110,15 @@ function! RevisionTypeOfFile(filename)
 	endif
 	execute "cd " . l:startdir
 	return l:retval
+endfunction
+
+"------------------------------------------------------------------------------
+" RevisionType
+"------------------------------------------------------------------------------
+" Get post als revision type for the current file (either git or svn)
+"------------------------------------------------------------------------------
+function! RevisionType()
+	return RevisionTypeOfFile(expand("%:p"))
 endfunction
 
 "------------------------------------------------------------------------------
@@ -410,5 +421,135 @@ function! DiffWithRevision(revname)
 	else
 		set nolz
 	endif
+endfunction
+
+"------------------------------------------------------------------------------
+" Versions
+"------------------------------------------------------------------------------
+" Build a temporary file of versions for current file.
+" This works for either ALS, MLS(SVN) or GIT.
+"------------------------------------------------------------------------------
+function! Versions()
+	let l:lz = &lz
+	set lz
+	let l:fullpath = expand("%:p")
+	let l:revtype = RevisionType()
+	let l:gitfile = expand("%")
+	if (isdirectory("C:\\"))
+		let l:gitfile = substitute(expand("%"), '\\', '/', '')
+	endif
+	let l:tempfile = BuildTmpFileName(l:fullpath) . ".versions"
+	execute "vnew " . l:tempfile
+	%d
+	execute "normal iRevisions for file: " . l:fullpath
+	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
+		if (l:revtype == "git")
+			let l:startdir = getcwd()
+			let l:tl = GetTopLevelAbsPathOfFile(l:fullpath)
+			if (!strlen(l:tl))
+				echo "Could not determine git toplevel"
+				return
+			endif
+			execute "cd " . l:tl
+			execute "sil! r !git log " . l:gitfile
+			execute "cd " . l:startdir
+		else
+			sil! r !svn log #
+		endif
+	else
+		sil! r !q #
+	endif
+	sil! g//s///g
+	1
+	sil! update
+	if (!l:lz)
+		set nolz
+	endif
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffFileRevision
+"------------------------------------------------------------------------------
+" Does a diff on a revision (and previous revision) for a file noted by full
+" path name a:file
+"------------------------------------------------------------------------------
+function! DiffFileRevision(file, revision)
+	let l:tmpfile = BuildTmpFileName(a:file)
+	let l:newrev = a:revision
+	let l:oldrev = ""
+	if (stridx(a:revision, '..') > 0)
+		let l:oldrev = substitute(a:revision, '\.\..*', '', '')
+		let l:newrev = substitute(a:revision, '.*\.\.', '', '')
+	elseif (stridx(a:revision, ':') > 0)
+		let l:oldrev = substitute(a:revision, ':.*', '', '')
+		let l:newrev = substitute(a:revision, '.*:', '', '')
+	endif
+	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
+		let l:revtype = RevisionTypeOfFile(a:file)
+		if (l:revtype == "git")
+			if (!strlen(l:oldrev))
+				let l:oldrev = substitute(system("git rev-parse " . a:revision . "~"), '\n', '', '')
+			endif
+			let l:startdir = getcwd()
+			let l:tl = GetTopLevelAbsPathOfFile(a:file)
+			let l:adjtl = substitute(l:tl, '\\', '/', 'g')
+			let l:adjfile = substitute(a:file, '\\', '/', 'g')
+			let l:adjfile = substitute(l:adjfile, "^" . l:adjtl . "/", '', "g")
+			sil! execute "cd " . l:adjtl
+			sil! execute "!git show " . l:oldrev . ":" . l:adjfile . " > " . l:tmpfile . "." . l:oldrev
+			sil! execute "!git show " . l:newrev . ":" . l:adjfile . " > " . l:tmpfile . "." . l:newrev
+			sil! execute "cd " . l:startdir
+		else
+			if (!strlen(l:oldrev))
+				let l:oldrev = l:newrev - 1
+			endif
+			sil! execute "!svn cat -r " . l:oldrev . " " . a:file . " > " . l:tmpfile . "." . l:oldrev
+			sil! execute "!svn cat -r " . l:newrev . " " . a:file . " > " . l:tmpfile . "." . l:newrev
+		endif
+	else
+		if (!strlen(l:oldrev))
+			" als has nasty 1.xx version numbers
+			let l:oldrev = substitute(l:newrev, '^1.', '', "") - 1
+			let l:oldrev = substitute(l:oldrev, '^', '1.', "")
+		endif
+		sil! execute "!g -O " . l:oldrev . " " . a:file
+		sil! execute "!g -O " . l:newrev . " " . a:file
+		sil! execute "!mv -f " . a:file . "." . l:oldrev . " " . l:tmpfile . "." . l:oldrev
+		sil! execute "!mv -f " . a:file . "." . l:newrev . " " . l:tmpfile . "." . l:newrev
+	endif
+	let command = "vert diffsplit " . l:tmpfile . "." . l:newrev
+	sil! execute "e! " . l:tmpfile . "." . l:oldrev . ""
+	sil! execute command
+	echo l:tmpfile
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffVersion
+"------------------------------------------------------------------------------
+" From a file built by the function versions do a vim diff on revision under
+" the cursor.
+"------------------------------------------------------------------------------
+function! DiffVersion() range
+	set lz
+	let l:oldr = @r
+	if (stridx(getline("1"), "Revisions for file:") < 0)
+		echo "Not in a version type file"
+		return
+	endif
+	let l:file = substitute(getline("1"), '^.*: ', '', "g")
+	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
+		let l:revtype = RevisionTypeOfFile(l:file)
+		if (l:revtype == "git")
+			sil! normal $?^commitw"ry$
+		else
+			sil! normal $?^r\d "rye
+		endif
+	else
+		sil! normal $?^\s*revisionw"r2ye
+	endif
+	sil! hid
+	execute 'call DiffFileRevision(l:file, @r)'
+	let @r = l:oldr
+	set nolz
 endfunction
 
