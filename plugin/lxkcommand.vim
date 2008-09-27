@@ -261,6 +261,9 @@ function! DiffWithRevisionGit(revname)
       let l:havetmp = 1
 	elseif (a:revname == "master")
 		let l:revtouse = GitRemoteBranch(l:gitdir)
+		if (!strlen(l:revtouse))
+			let l:revtouse = "master"
+		endif
 	elseif (a:revname == "head")
 		let l:revtouse = 'HEAD'
 	elseif (a:revname == "bdaily")
