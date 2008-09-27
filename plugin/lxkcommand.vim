@@ -487,15 +487,15 @@ function! DiffFileRevision(file, revision)
 	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
 		let l:revtype = RevisionTypeOfFile(a:file)
 		if (l:revtype == "git")
-			if (!strlen(l:oldrev))
-				let l:oldrev = substitute(system("git rev-parse " . a:revision . "~"), '\n', '', '')
-			endif
 			let l:startdir = getcwd()
 			let l:tl = GetTopLevelAbsPathOfFile(a:file)
 			let l:adjtl = substitute(l:tl, '\\', '/', 'g')
 			let l:adjfile = substitute(a:file, '\\', '/', 'g')
 			let l:adjfile = substitute(l:adjfile, "^" . l:adjtl . "/", '', "g")
 			sil! execute "cd " . l:tl
+			if (!strlen(l:oldrev))
+				let l:oldrev = substitute(system("git rev-parse " . a:revision . "~"), '\n', '', '')
+			endif
 			sil! execute "!git show " . l:oldrev . ":" . l:adjfile . " > " . l:tmpfile . "." . l:oldrev
 			sil! execute "!git show " . l:newrev . ":" . l:adjfile . " > " . l:tmpfile . "." . l:newrev
 			sil! execute "cd " . l:startdir
