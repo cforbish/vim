@@ -495,7 +495,7 @@ function! DiffFileRevision(file, revision)
 			let l:adjtl = substitute(l:tl, '\\', '/', 'g')
 			let l:adjfile = substitute(a:file, '\\', '/', 'g')
 			let l:adjfile = substitute(l:adjfile, "^" . l:adjtl . "/", '', "g")
-			sil! execute "cd " . l:adjtl
+			sil! execute "cd " . l:tl
 			sil! execute "!git show " . l:oldrev . ":" . l:adjfile . " > " . l:tmpfile . "." . l:oldrev
 			sil! execute "!git show " . l:newrev . ":" . l:adjfile . " > " . l:tmpfile . "." . l:newrev
 			sil! execute "cd " . l:startdir
