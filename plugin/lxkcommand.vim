@@ -12,7 +12,7 @@ map \dm :execute "call DiffWithRevision(\"master\")"
 map \dt :execute "call DiffWithRevision(\"tlver\")"
 map \dy :execute "call DiffWithRevision(\"bdaily\")"
 " map \ds :execute "call DiffSnapshot()"
-" map \dl :execute "call DiffLineRev()"
+map \dl :execute "call DiffLineRev()"
 map \dr :execute "call DiffVersion()"
 map \df :vert diffsplit 
 map \do :vert diffsplit %.orig
@@ -21,6 +21,8 @@ map \dw :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
 map \dx :set lz:if &diff:windo bw!:endif:set nolz
 map \dn :set lz:if &diff:windo set nodiff fdc=0:endif:set nolz
 map \d# :vert diffsplit #:windo normal gg
+
+map \fb :call FileBlame()
 
 com! -nargs=0 Versions call Versions()
 com! -nargs=1 -complete=custom,GitManComplete GitMan execute "edit " . g:git_doc_dir . "<args>.txt"
@@ -600,5 +602,71 @@ function! GitStatus()
       echo "Could not determine a top level for current file or current directory"
    endif
 	set nolz
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffLineRev
+"------------------------------------------------------------------------------
+" Does a diff for the revision that caused the last change to the current line
+" in the current file.
+"------------------------------------------------------------------------------
+function! DiffLineRev() range
+	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
+		set lz
+		let l:tl = GetTopLevelAbsPath()
+		let l:startdir = getcwd()
+		execute "cd " . l:tl
+		let l:isgit = 0
+		let l:lineno = line(".")
+		new
+		if (isdirectory(l:tl . "/.git"))
+			let l:isgit = 1
+			sil! r !git blame #
+		else
+			sil! r !svn blame #
+		endif
+		1d
+		execute l:lineno
+		let l:revision = expand("<cWORD>")
+		bw!
+		if (l:isgit && strpart(l:revision, 0, 1) == "^")
+			let l:revision = 0
+		endif
+		if (l:revision <= 1)
+			redraw
+			echo "this line predates MLS."
+		else
+			call DiffFileRevision(expand("%:p"), l:revision)
+		endif
+		execute "cd " . l:startdir
+		set nolz
+	else
+		echo "Sorry, ALS has no concept of blame."
+	endif
+endfunction
+
+"------------------------------------------------------------------------------
+" FileBlame
+"------------------------------------------------------------------------------
+" Bring up blame window for either git or svn.
+"------------------------------------------------------------------------------
+function! FileBlame() range
+	let l:revtype = RevisionType()
+	let l:tempfile = BuildTmpFileName(expand("%:p")) . ".blame"
+	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
+		set lz
+		let lineno = line(".")
+		execute "new " . l:tempfile
+		if (l:revtype == "git")
+			sil! r !git blame #
+		else
+			sil! r !svn blame #
+		endif
+		1d
+		update
+		execute lineno
+	else
+		echo "Sorry, ALS has no concept of blame."
+	endif
 endfunction
 
