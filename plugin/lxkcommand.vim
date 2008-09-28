@@ -23,14 +23,19 @@ map \dn :set lz:if &diff:windo set nodiff fdc=0:endif:set nolz
 map \d# :vert diffsplit #:windo normal gg
 
 com! -nargs=0 Versions call Versions()
+com! -nargs=1 -complete=custom,GitManComplete GitMan execute "edit " . g:git_doc_dir . "<args>.txt"
+com! -range -nargs=0 GitStatus call GitStatus()
+com! -nargs=1 GitDiff echo DiffWithRevisionGit(<f-args>)
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
 "------------------------------------------------------------------------------
 if (isdirectory("C:\\"))
 	let g:os_slash="\\"
+	let g:git_doc_dir="C:\\cygwin\\home\\cforbish\\git\\src\\git\\Documentation\\"
 else
 	let g:os_slash="/"
+	let g:git_doc_dir="~/apps/git-1.5.5.4/Documentation/"
 endif
 
 "------------------------------------------------------------------------------
@@ -550,6 +555,50 @@ function! DiffVersion() range
 	sil! hid
 	execute 'call DiffFileRevision(l:file, @r)'
 	let @r = l:oldr
+	set nolz
+endfunction
+
+"------------------------------------------------------------------------------
+" GitManComplete
+"------------------------------------------------------------------------------
+" Function to handle auto completing a GitMan command
+"------------------------------------------------------------------------------
+function! GitManComplete(ArgLead, CmdLine, CursorPos)
+	set lz
+	let savereg = @+
+	new
+	execute "r !ls " . g:git_doc_dir
+	v/\.txt$/d
+	g/\.txt$/s///g
+	%y+
+	bw!
+	let retval = @+
+	let @+ = savereg
+	set nolz
+	return retval
+endfunction
+
+"------------------------------------------------------------------------------
+" GitStatus
+"------------------------------------------------------------------------------
+" Do a git status to a temporary file
+"------------------------------------------------------------------------------
+function! GitStatus()
+	set lz
+   let l:tl = GetTopLevelAbsPathOfFile(expand("%:p"))
+   if (!strlen(l:tl))
+      let l:tl = GetTopLevelAbsPathOfPath(getcwd())
+   endif
+   if (strlen(l:tl))
+      execute "cd " . l:tl
+      let l:tmpfilename = BuildTmpFileName(getcwd()) . "_git_status"
+      execute "edit " . l:tmpfilename
+      %d
+      r !git status
+      update
+   else
+      echo "Could not determine a top level for current file or current directory"
+   endif
 	set nolz
 endfunction
 
