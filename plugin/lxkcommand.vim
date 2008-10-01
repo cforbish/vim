@@ -4,25 +4,25 @@ if (v:version < 600)
 	finish
 endif
 
-map \db :execute "call DiffWithRevision(\"base\")"
-map \dd :execute "call DiffWithRevision(\"daily\")"
-map \dc :execute "call DiffWithRevision(\"core\")"
-map \dh :execute "call DiffWithRevision(\"head\")"
-map \dm :execute "call DiffWithRevision(\"master\")"
-map \dt :execute "call DiffWithRevision(\"tlver\")"
-map \dy :execute "call DiffWithRevision(\"bdaily\")"
-" map \ds :execute "call DiffSnapshot()"
-map \dl :execute "call DiffLineRev()"
-map \dr :execute "call DiffVersion()"
+map \db :execute "call DiffWithRevision(\"base\")"
+map \dd :execute "call DiffWithRevision(\"daily\")"
+map \dc :execute "call DiffWithRevision(\"core\")"
+map \dh :execute "call DiffWithRevision(\"head\")"
+map \dm :execute "call DiffWithRevision(\"master\")"
+map \dt :execute "call DiffWithRevision(\"tlver\")"
+map \dy :execute "call DiffWithRevision(\"bdaily\")"
+" map \ds :execute "call DiffSnapshot()"
+map \dl :execute "call DiffLineRev()"
+map \dr :execute "call DiffVersion()"
 map \df :vert diffsplit 
-map \do :vert diffsplit %.orig
-map \dq :set lz:if &diff:windo set nodiff fdc=0:wincmd l:clo:endif:set nolz
-map \dw :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
-map \dx :set lz:if &diff:windo bw!:endif:set nolz
-map \dn :set lz:if &diff:windo set nodiff fdc=0:endif:set nolz
-map \d# :vert diffsplit #:windo normal gg
+map \do :vert diffsplit %.orig
+map \dq :set lz:if &diff:windo set nodiff fdc=0:wincmd l:clo:endif:set nolz
+map \dw :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
+map \dx :set lz:if &diff:windo bw!:endif:set nolz
+map \dn :set lz:if &diff:windo set nodiff fdc=0:endif:set nolz
+map \d# :vert diffsplit #:windo normal gg
 
-map \fb :call FileBlame()
+map \fb :call FileBlame()
 
 com! -nargs=0 Versions call Versions()
 com! -nargs=1 -complete=custom,GitManComplete GitMan execute "edit " . g:git_doc_dir . "<args>.txt"
