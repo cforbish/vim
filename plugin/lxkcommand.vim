@@ -4,30 +4,67 @@ if (v:version < 600)
 	finish
 endif
 
+"------------------------------------------------------------------------------
+" Diff Mappings: (ALS/MLS/GIT)
+"------------------------------------------------------------------------------
+" B - (\db) BASE   Diff just like git diff or svn diff.
+" H - (\dh) HEAD   Will see changes made to a file after git add.
+" M - (\dm) MASTER trunk/master pride-next/master ...
+" D - (\dd) DAILY  trunk/daily pride-next/daily ...
+" G - (\dg) BDAILY trunk/lastgood (not all branches have this).
+" T - (\dt) TOP    Diffs against revistion workspace originated from.
+" C - (\dc) CORE   Gets latest file from svn and does a diff.
+" O - (\do) ORIG   Does a diff with current file and a .orig (ALS)
+" L - (\dl) LINE   Does a diff of a revision in which current line changed.
+" F - (\df) FILE   Prompts for a file to diff current file against.
+" R - (\dr) REV    Works with Versions function (:Diffr diffs specific revision)
+" # - (\dx) LAST   Does a diff with current file and last file.
+" Q - (\dq) QUIT   Closes diff session and window to the right.
+" X - (\dk) KILL   Closes diff session and both windows.
+"
+"                                 *-*-H
+" local git repo                 /
+" (pride-next)       -G-*-*-D-*-T-*-*-*-M
+"                                      /
+"                                     /<------- git mls fetch -a
+"                                    /
+" subversion     -G-*-*-D-*-*-*-*-*-*-*-*-*-C
+" (lf/pride/next/wip)
+" (https://mls:8043/mls3/lf/pride/next/wip)
+"
+"------------------------------------------------------------------------------
 map \db :execute "call DiffWithRevision(\"base\")"
-map \dd :execute "call DiffWithRevision(\"daily\")"
-map \dc :execute "call DiffWithRevision(\"core\")"
 map \dh :execute "call DiffWithRevision(\"head\")"
 map \dm :execute "call DiffWithRevision(\"master\")"
+map \dd :execute "call DiffWithRevision(\"daily\")"
+map \dg :execute "call DiffWithRevision(\"bdaily\")"
 map \dt :execute "call DiffWithRevision(\"tlver\")"
-map \dy :execute "call DiffWithRevision(\"bdaily\")"
-" map \ds :execute "call DiffSnapshot()"
-map \dl :execute "call DiffLineRev()"
-map \dr :execute "call DiffVersion()"
-map \df :vert diffsplit 
+map \dc :execute "call DiffWithRevision(\"core\")"
 map \do :vert diffsplit %.orig
-map \dq :set lz:if &diff:windo set nodiff fdc=0:wincmd l:clo:endif:set nolz
-map \dw :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
-map \dx :set lz:if &diff:windo bw!:endif:set nolz
-map \dn :set lz:if &diff:windo set nodiff fdc=0:endif:set nolz
+map \dl :execute "call DiffLineRev()"
+map \df :vert diffsplit 
+map \dr :execute "call DiffVersion()"
 map \d# :vert diffsplit #:windo normal gg
+map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
+map \dx :set lz:if &diff:windo bw!:endif:set nolz
 
+"------------------------------------------------------------------------------
+" File Mappings:
+"------------------------------------------------------------------------------
+" \fb - does a blame for current file in separate window.
+"------------------------------------------------------------------------------
 map \fb :call FileBlame()
 
+"------------------------------------------------------------------------------
+" Commands:
+"------------------------------------------------------------------------------
+" Versions  - get log information for current file (ALS/MLS/GIT).
+" GitStatus - do a git status for current file or directory (tries file first).
+" GitMan    - bring up local git documentation file for a topic.
+"------------------------------------------------------------------------------
 com! -nargs=0 Versions call Versions()
 com! -nargs=1 -complete=custom,GitManComplete GitMan execute "edit " . g:git_doc_dir . "<args>.txt"
 com! -range -nargs=0 GitStatus call GitStatus()
-com! -nargs=1 GitDiff echo DiffWithRevisionGit(<f-args>)
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -355,6 +392,46 @@ function! DiffWithRevisionMls(revname)
 endfunction
 
 "------------------------------------------------------------------------------
+" GetTopLevelPath
+"------------------------------------------------------------------------------
+" Find and go to the top level directory of current work space.
+"------------------------------------------------------------------------------
+function! GetTopLevelPath()
+	let l:startdir = getcwd()
+	if (strlen(expand("%:h")))
+		execute "cd " . expand("%:h")
+	endif
+	let l:lastdir = ""
+	let l:svndir = ""
+	let l:filedir = getcwd()
+	let l:currdir = l:filedir
+	while (!filereadable(".toplevel") && !isdirectory(".git") && (l:currdir != $VIMHOME) && (l:currdir != l:lastdir))
+		let l:lastdir = getcwd()
+		if (isdirectory(".svn"))
+			let l:svndir = l:lastdir
+		endif
+		cd ..
+		if (strlen(l:svndir) && !isdirectory(".svn"))
+			execute "cd " . l:currdir
+			break
+		endif
+		let l:currdir = getcwd()
+	endwhile
+	if (filereadable(".toplevel") || isdirectory(".git") || isdirectory(".svn"))
+		let l:currdir = getcwd()
+		if (isdirectory("C:\\"))
+			let l:currdir = substitute(l:currdir, '\\', '\\\\', "g")
+		endif
+		let l:retval = substitute(l:filedir, l:currdir . g:os_slash, "", "")
+		let l:retval = l:retval . g:os_slash . expand("%:t")
+	else
+		let l:retval = "."
+	endif
+	execute "cd " . l:startdir
+	return l:retval
+endfunction
+
+"------------------------------------------------------------------------------
 " DiffWithRevisionAls
 "------------------------------------------------------------------------------
 " Get a difference between current file and some
@@ -632,7 +709,8 @@ function! DiffLineRev() range
 		if (l:isgit && strpart(l:revision, 0, 1) == "^")
 			let l:revision = 0
 		endif
-		if (l:revision <= 1)
+		let l:testrev = printf("%u", '0x' . l:revision)
+		if ((l:testrev >= 0) && (l:testrev <= 1))
 			redraw
 			echo "this line predates MLS."
 		else

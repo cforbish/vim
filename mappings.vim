@@ -50,18 +50,10 @@ map _- :call CleanRegs()
 map \v `<V`>
 
 if (v:version >= 600)
-	map \dc :execute "vert diffsplit $CORE/" . GetTopLevelPath()
-	map \dd :execute "vert diffsplit $DAILY/" . GetTopLevelPath()
-	map \do :vert diffsplit %.orig<CR>:set fdc=0
-	map \dn :set nodiff fdc=0
-	map \d# :vert diffsplit #
 	map \sp :call IspellRegion()
 	map \sr :call RegsToStar()
 	map \ss :call StarToRegs()
 	map _D* :let @*=strftime("%m-%d-%y")
-	map \df :vert diffsplit 
-	map \dq :set lz:if &diff:windo set nodiff fdc=0:wincmd l:clo:endif:set nolz
-	map \dw :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
 endif
 
 if (&shell == "/bin/sh")
