@@ -12,18 +12,23 @@ endif
 " M - (\dm) MASTER trunk/master pride-next/master ...
 " D - (\dd) DAILY  trunk/daily pride-next/daily ...
 " G - (\dg) BDAILY trunk/lastgood (not all branches have this).
-" T - (\dt) TOP    Diffs against revistion workspace originated from.
+" T - (\dt) TOP    Diffs against remote revision workspace originated from.
 " C - (\dc) CORE   Gets latest file from svn and does a diff.
 " O - (\do) ORIG   Does a diff with current file and a .orig (ALS)
 " L - (\dl) LINE   Does a diff of a revision in which current line changed.
 " F - (\df) FILE   Prompts for a file to diff current file against.
-" R - (\dr) REV    Works with Versions function (:Diffr diffs specific revision)
-" # - (\dx) LAST   Does a diff with current file and last file.
+" F - (\du) URL    Prompts for a svn path to diff against.
+" R - (\dr) REV    Diff changes of one revieion (works with Versions function).
+" W - (\dw) WITH   Diff current file with some other revision of the same file.
+" # - (\d#) LAST   Does a diff with current file and last file.
+" S - (\dS) SNAP   Does a diff with current file and file from yesterday.
 " Q - (\dq) QUIT   Closes diff session and window to the right.
-" X - (\dk) KILL   Closes diff session and both windows.
+" X - (\dx) KILL   Closes diff session and both windows.
 "
-"                                 *-*-H
-" local git repo                 /
+"                                    *-*-*-H
+"                                   /
+"                                 *-*-*
+" local git repo                 /      
 " (pride-next)       -G-*-*-D-*-T-*-*-*-M
 "                                      /
 "                                     /<------- git mls fetch -a
@@ -43,8 +48,11 @@ map \dc :execute "call DiffWithRevision(\"core\")"
 map \do :vert diffsplit %.orig
 map \dl :execute "call DiffLineRev()"
 map \df :vert diffsplit 
+map \du :execute 'call DiffWithSVNUrl("' . input("Enter svn path: ") . '")'
 map \dr :execute "call DiffVersion()"
+map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '")'
 map \d# :vert diffsplit #:windo normal gg
+map \ds :execute "call DiffSnapshot()"
 map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
 map \dx :set lz:if &diff:windo bw!:endif:set nolz
 
@@ -508,6 +516,28 @@ function! DiffWithRevision(revname)
 endfunction
 
 "------------------------------------------------------------------------------
+" DiffWithSVNUrl
+"------------------------------------------------------------------------------
+function! DiffWithSVNUrl(urlpath)
+	let l:lz = &lz
+	set lz
+	if (strpart(a:urlpath, 0, 4) == "http")
+		let l:tempfile = BuildTmpFileName(expand("%:p"))
+      call BuildFileFromSystemCmd(l:tempfile, "svn cat " . a:urlpath)
+      normal gg0
+      execute "vert diffsplit " . l:tempfile
+      normal hgglgg
+	else
+		echo '"' . a:urlpath . '" is not a valid svn path.'
+	endif
+	if (l:lz)
+		set lz
+	else
+		set nolz
+	endif
+endfunction
+
+"------------------------------------------------------------------------------
 " Versions
 "------------------------------------------------------------------------------
 " Build a temporary file of versions for current file.
@@ -617,19 +647,20 @@ function! DiffVersion() range
 	set lz
 	let l:oldr = @r
 	if (stridx(getline("1"), "Revisions for file:") < 0)
-		echo "Not in a version type file"
-		return
-	endif
-	let l:file = substitute(getline("1"), '^.*: ', '', "g")
-	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
-		let l:revtype = RevisionTypeOfFile(l:file)
-		if (l:revtype == "git")
-			sil! normal $?^commitw"ry$
-		else
-			sil! normal $?^r\d "rye
-		endif
+		let @r = input("Enter revision to diff: ")
+		let l:file = expand("%:p")
 	else
-		sil! normal $?^\s*revisionw"r2ye
+		let l:file = substitute(getline("1"), '^.*: ', '', "g")
+		if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
+			let l:revtype = RevisionTypeOfFile(l:file)
+			if (l:revtype == "git")
+				sil! normal $?^commitw"ry$
+			else
+				sil! normal $?^r\d "rye
+			endif
+		else
+			sil! normal $?^\s*revisionw"r2ye
+		endif
 	endif
 	sil! hid
 	execute 'call DiffFileRevision(l:file, @r)'
@@ -661,13 +692,24 @@ endfunction
 " GitStatus
 "------------------------------------------------------------------------------
 " Do a git status to a temporary file
+" It determines which directory to do the status on by:
+" 1) Current directory if a git top level.
+" 2) Top level of current file if it is part of a git repo.
+" 3) Top level of current directory if it is part of a git repo.
 "------------------------------------------------------------------------------
 function! GitStatus()
+	let l:lz = &lz
 	set lz
-   let l:tl = GetTopLevelAbsPathOfFile(expand("%:p"))
-   if (!strlen(l:tl))
-      let l:tl = GetTopLevelAbsPathOfPath(getcwd())
-   endif
+	let l:tl = ''
+	if (isdirectory(".git"))
+		let l:tl = getcwd()
+	else
+		if (RevisionTypeOfFile(expand("%:p")) == ".git")
+			let l:tl = GetTopLevelAbsPathOfFile(expand("%:p"))
+		else
+			let l:tl = GetTopLevelAbsPathOfPath(getcwd())
+		endif
+	endif
    if (strlen(l:tl))
       execute "cd " . l:tl
       let l:tmpfilename = BuildTmpFileName(getcwd()) . "_git_status"
@@ -678,7 +720,9 @@ function! GitStatus()
    else
       echo "Could not determine a top level for current file or current directory"
    endif
-	set nolz
+	if (!l:lz)
+		set nolz
+	endif
 endfunction
 
 "------------------------------------------------------------------------------
@@ -724,6 +768,25 @@ function! DiffLineRev() range
 endfunction
 
 "------------------------------------------------------------------------------
+" DiffSnapshot
+"------------------------------------------------------------------------------
+" Diff current file with same file from yesterday (.snapshot)
+"------------------------------------------------------------------------------
+function! DiffSnapshot()
+	let l:lz = &lz
+	set lz
+	let l:startdir = getcwd()
+	execute "cd"
+	execute "vert diffsplit ~/.snapshot/sv_nightly.0/" . expand("%")
+	execute "cd " . l:startdir
+	if (l:lz)
+		set lz
+	else
+		set nolz
+	endif
+endfunction
+
+"------------------------------------------------------------------------------
 " FileBlame
 "------------------------------------------------------------------------------
 " Bring up blame window for either git or svn.
@@ -732,7 +795,10 @@ function! FileBlame() range
 	let l:revtype = RevisionType()
 	let l:tempfile = BuildTmpFileName(expand("%:p")) . ".blame"
 	if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
+		let l:lz = &lz
 		set lz
+		let l:startdir = getcwd()
+		execute "sil! cd " . expand("%:h")
 		let lineno = line(".")
 		execute "new " . l:tempfile
 		if (l:revtype == "git")
@@ -743,6 +809,10 @@ function! FileBlame() range
 		1d
 		update
 		execute lineno
+		execute "sil! cd " . l:startdir
+		if (!l:lz)
+			set nolz
+		endif
 	else
 		echo "Sorry, ALS has no concept of blame."
 	endif
