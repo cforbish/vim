@@ -704,7 +704,7 @@ function! GitStatus()
 	if (isdirectory(".git"))
 		let l:tl = getcwd()
 	else
-		if (RevisionTypeOfFile(expand("%:p")) == ".git")
+		if (RevisionTypeOfFile(expand("%:p")) == "git")
 			let l:tl = GetTopLevelAbsPathOfFile(expand("%:p"))
 		else
 			let l:tl = GetTopLevelAbsPathOfPath(getcwd())
