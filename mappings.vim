@@ -30,6 +30,7 @@ map \ff :e w:/tmp/foo
 map \fb :e $HOME/.bashrc
 map \fc :e $HOME/.cshrc
 map \fv :e $HOME/vim_scripts/.vimrc
+map \fa :so W:\mystuff\vimstuff\nba\sourceme.vim:cd %:h
 map \fn :so W:\mystuff\vimstuff\nascar\sourceme.vim:cd %:h
 map \fo :so W:\mystuff\vimstuff\nfl\sourceme.vim:cd %:h
 map \fp :so c:\mystuff\otherstuff\phdir\vim\phsource.vim:cd %:h
