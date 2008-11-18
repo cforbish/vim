@@ -2,6 +2,7 @@
 autocmd!
 
 if ($OSTYPE == "cygwin")
+	set shell=C:\WINDOWS\system32\cmd.exe
 	" let $VIMRUNTIME="c:\\cygwin\\usr\\share\\vim\\vim70"
 	" let $VIMRUNTIME="C:\Program Files\Vim\vim71"
 	" let $VIMRUNTIME="/cygdrive/c/Program\ Files/Vim/vim71"
