@@ -88,12 +88,10 @@ func! <SID>BuildPage(sect, page)
   silent exec "r !man ".s:GetCmdArg(a:sect, a:page)." | col -b"
   update
   let l:retval = getfsize(expand("%"))
-  exec 'sil! !echo "BuildPage sect '. a:sect . ', page ' a:page. ' ,retval ' . l:retval . '" >> \cygwin\home\cforbish\vimtmp\man.txt'
   return l:retval
 endfunc
 
 func! <SID>GetPage(...)
-  exec 'sil! !echo "GetPage line one." >> \cygwin\home\cforbish\vimtmp\man.txt'
   if a:0 >= 2
     let sect = a:1
     let page = a:2
