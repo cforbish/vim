@@ -63,7 +63,6 @@ func! ManPreGetPage(cnt)
     let sect = a:cnt
     let page = expand("<cword>")
   endif
-echo "sect: " . sect . ", page: " . page . "."
   call s:GetPage(sect, page)
 endfunc
 
@@ -84,7 +83,17 @@ func! <SID>FindPage(sect, page)
   return 1
 endfunc
 
+func! <SID>BuildPage(sect, page)
+  %d
+  silent exec "r !man ".s:GetCmdArg(a:sect, a:page)." | col -b"
+  update
+  let l:retval = getfsize(expand("%"))
+  exec 'sil! !echo "BuildPage sect '. a:sect . ', page ' a:page. ' ,retval ' . l:retval . '" >> \cygwin\home\cforbish\vimtmp\man.txt'
+  return l:retval
+endfunc
+
 func! <SID>GetPage(...)
+  exec 'sil! !echo "GetPage line one." >> \cygwin\home\cforbish\vimtmp\man.txt'
   if a:0 >= 2
     let sect = a:1
     let page = a:2
@@ -94,7 +103,6 @@ func! <SID>GetPage(...)
   else
     return
   endif
-  " echo "sect: " . sect . ", page: " . page . "."
   " To support: nmap K :Man <cword>
   if page == '<cword>'
     let page = expand('<cword>')
@@ -136,7 +144,13 @@ func! <SID>GetPage(...)
   %d
   let $MANWIDTH = winwidth(0)
   " silent exec "r !/usr/bin/man ".s:GetCmdArg(sect, page)." | col -b"
-  silent exec "r !man ".s:GetCmdArg(sect, page)." | col -b"
+  if (s:BuildPage(sect, page) < 10)
+    if (s:BuildPage('', page) < 10)
+      echohl WarningMsg
+      echo "Cannot find " . page . "(" . sect . ")."
+      echohl None
+    endif
+  endif
   " " Is it OK?  It's for remove blank or message line.
   " if getline(1) =~ "^\s*$"
   "   silent exec "norm 2G/^[^\s]\<cr>kd1G"
@@ -153,7 +167,7 @@ func! <SID>GetPage(...)
   setl sts=8
   sil! normal 1Gddgue
   setl nomodifiable
-  w
+  update
 endfunc
 
 func! <SID>PopPage()
