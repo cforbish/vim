@@ -46,7 +46,6 @@ else
 endif
 
 func! ManPreGetPage(cnt)
-  !echo "ManPreGetPage line one" >> $HOME/tmp/vim.patch
   if a:cnt == 0
     let old_isk = &iskeyword
     setl iskeyword+=(,)
@@ -64,7 +63,7 @@ func! ManPreGetPage(cnt)
     let sect = a:cnt
     let page = expand("<cword>")
   endif
-  echo "doing test"
+echo "sect: " . sect . ", page: " . page . "."
   call s:GetPage(sect, page)
 endfunc
 
@@ -86,7 +85,6 @@ func! <SID>FindPage(sect, page)
 endfunc
 
 func! <SID>GetPage(...)
-  !echo "GetPage line one" >> $HOME/tmp/vim.patch
   if a:0 >= 2
     let sect = a:1
     let page = a:2
@@ -96,17 +94,18 @@ func! <SID>GetPage(...)
   else
     return
   endif
+  " echo "sect: " . sect . ", page: " . page . "."
   " To support: nmap K :Man <cword>
   if page == '<cword>'
     let page = expand('<cword>')
   endif
-  if sect != "" && s:FindPage(sect, page) == 0
-    let sect = ""
-  endif
-  if s:FindPage(sect, page) == 0
-    echo "\nCannot find a '".page."'."
-    return
-  endif
+  " if sect != "" && s:FindPage(sect, page) == 0
+  "   let sect = ""
+  " endif
+  " if s:FindPage(sect, page) == 0
+  "   echo "\nCannot find a '".page."'."
+  "   return
+  " endif
   exec "let s:man_tag_buf_".s:man_tag_depth." = ".bufnr("%")
   exec "let s:man_tag_lin_".s:man_tag_depth." = ".line(".")
   exec "let s:man_tag_col_".s:man_tag_depth." = ".col(".")
@@ -131,26 +130,30 @@ func! <SID>GetPage(...)
       endwhile
     endif
   endif
-  silent exec "edit $HOME/".page.".".sect."~"
+  " sil! edit "$HOME/vimtmp/page.man"
+  sil! exec "edit $HOME/vimtmp/manpage.man"
   set ma
-  silent exec "norm 1GdG"
+  %d
   let $MANWIDTH = winwidth(0)
-  silent exec "r!/usr/bin/man ".s:GetCmdArg(sect, page)." | col -b"
-  " Is it OK?  It's for remove blank or message line.
-  if getline(1) =~ "^\s*$"
-    silent exec "norm 2G/^[^\s]\<cr>kd1G"
-  endif
-  if getline('$') == ''
-    silent exec "norm G?^\s*[^\s]\<cr>2jdG"
-  endif
-  1
+  " silent exec "r !/usr/bin/man ".s:GetCmdArg(sect, page)." | col -b"
+  silent exec "r !man ".s:GetCmdArg(sect, page)." | col -b"
+  " " Is it OK?  It's for remove blank or message line.
+  " if getline(1) =~ "^\s*$"
+  "   silent exec "norm 2G/^[^\s]\<cr>kd1G"
+  " endif
+  " if getline('$') == ''
+  "   silent exec "norm G?^\s*[^\s]\<cr>2jdG"
+  " endif
+  " 1
   setl ft=man nomod
-  setl bufhidden=hide
+  " setl bufhidden=hide
   setl nobuflisted
   setl ts=8
   setl sw=8
   setl sts=8
+  sil! normal 1Gddgue
   setl nomodifiable
+  w
 endfunc
 
 func! <SID>PopPage()
