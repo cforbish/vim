@@ -20,6 +20,7 @@ set ai
 set makeprg=g++\ -Wall\ -g\ -o\ %:r\ %
 set splitright
 set ruler
+set nowrap
 
 set tabstop=3
 set shiftwidth=3
