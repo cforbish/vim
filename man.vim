@@ -86,12 +86,14 @@ endfunc
 func! <SID>BuildPage(sect, page)
   %d
   silent exec "r !man ".s:GetCmdArg(a:sect, a:page)." | col -b"
-  update
+  sil! update
   let l:retval = getfsize(expand("%"))
   return l:retval
 endfunc
 
 func! <SID>GetPage(...)
+	let l:lz = &lz
+	set lz
   if a:0 >= 2
     let sect = a:1
     let page = a:2
@@ -142,30 +144,40 @@ func! <SID>GetPage(...)
   %d
   let $MANWIDTH = winwidth(0)
   " silent exec "r !/usr/bin/man ".s:GetCmdArg(sect, page)." | col -b"
+  let l:havepage = 1
   if (s:BuildPage(sect, page) < 10)
     if (s:BuildPage('', page) < 10)
       echohl WarningMsg
-      echo "Cannot find " . page . "(" . sect . ")."
+      echo "\nCannot find " . page . "(" . sect . ")."
       echohl None
+      let l:havepage = 0
+      bw!
     endif
   endif
-  " " Is it OK?  It's for remove blank or message line.
-  " if getline(1) =~ "^\s*$"
-  "   silent exec "norm 2G/^[^\s]\<cr>kd1G"
-  " endif
-  " if getline('$') == ''
-  "   silent exec "norm G?^\s*[^\s]\<cr>2jdG"
-  " endif
-  " 1
-  setl ft=man nomod
-  " setl bufhidden=hide
-  setl nobuflisted
-  setl ts=8
-  setl sw=8
-  setl sts=8
-  sil! normal 1Gddgue
-  setl nomodifiable
-  update
+  if (l:havepage)
+    " " Is it OK?  It's for remove blank or message line.
+    " if getline(1) =~ "^\s*$"
+    "   silent exec "norm 2G/^[^\s]\<cr>kd1G"
+    " endif
+    " if getline('$') == ''
+    "   silent exec "norm G?^\s*[^\s]\<cr>2jdG"
+    " endif
+    " 1
+    setl ft=man nomod
+    " setl bufhidden=hide
+    setl nobuflisted
+    setl ts=8
+    setl sw=8
+    setl sts=8
+    sil! normal 1Gddgue
+    setl nomodifiable
+    sil! update
+  endif
+	if (l:lz)
+		set lz
+	else
+		set nolz
+	endif
 endfunc
 
 func! <SID>PopPage()
