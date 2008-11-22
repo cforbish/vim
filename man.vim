@@ -86,8 +86,9 @@ endfunc
 func! <SID>BuildPage(sect, page)
   %d
   silent exec "r !man ".s:GetCmdArg(a:sect, a:page)." | col -b"
-  sil! update
-  let l:retval = getfsize(expand("%"))
+  sil! normal 1Gddgue
+  sil! g;^xxx;d
+  let l:retval = strlen(getline(1))
   return l:retval
 endfunc
 
@@ -138,15 +139,13 @@ func! <SID>GetPage(...)
       endwhile
     endif
   endif
-  " sil! edit "$HOME/vimtmp/page.man"
-  sil! exec "edit $HOME/vimtmp/manpage.man"
-  set ma
+  set modifiable
   %d
   let $MANWIDTH = winwidth(0)
   " silent exec "r !/usr/bin/man ".s:GetCmdArg(sect, page)." | col -b"
   let l:havepage = 1
-  if (s:BuildPage(sect, page) < 10)
-    if (s:BuildPage('', page) < 10)
+  if (s:BuildPage(sect, page) < 2)
+    if (s:BuildPage('', page) < 2)
       echohl WarningMsg
       echo "\nCannot find " . page . "(" . sect . ")."
       echohl None
@@ -163,15 +162,17 @@ func! <SID>GetPage(...)
     "   silent exec "norm G?^\s*[^\s]\<cr>2jdG"
     " endif
     " 1
+    let l:rpage = substitute(getline(1), '(.*', '', '')
+    let l:rsect = substitute(getline(1), '.*(\([^)]*\)).*', '\1', '')
+    execute "sil! file ~/vimtmp/" . l:rpage . "_" . l:rsect . ".man"
     setl ft=man nomod
     " setl bufhidden=hide
     setl nobuflisted
     setl ts=8
     setl sw=8
     setl sts=8
-    sil! normal 1Gddgue
     setl nomodifiable
-    sil! update
+    sil! update!
   endif
 	if (l:lz)
 		set lz
