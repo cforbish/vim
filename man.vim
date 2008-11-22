@@ -73,16 +73,6 @@ func! <SID>GetCmdArg(sect, page)
   return s:man_sect_arg.' '.a:sect.' '.a:page
 endfunc
 
-func! <SID>FindPage(sect, page)
-  let where = system("/usr/bin/man ".s:man_find_arg.' '.s:GetCmdArg(a:sect, a:page))
-  if where !~ "^/"
-    if substitute(where, ".* \\(.*$\\)", "\\1", "") !~ "^/"
-      return 0
-    endif
-  endif
-  return 1
-endfunc
-
 func! <SID>BuildPage(sect, page)
   %d
   silent exec "r !man ".s:GetCmdArg(a:sect, a:page)." | col -b"
@@ -108,13 +98,6 @@ func! <SID>GetPage(...)
   if page == '<cword>'
     let page = expand('<cword>')
   endif
-  " if sect != "" && s:FindPage(sect, page) == 0
-  "   let sect = ""
-  " endif
-  " if s:FindPage(sect, page) == 0
-  "   echo "\nCannot find a '".page."'."
-  "   return
-  " endif
   exec "let s:man_tag_buf_".s:man_tag_depth." = ".bufnr("%")
   exec "let s:man_tag_lin_".s:man_tag_depth." = ".line(".")
   exec "let s:man_tag_col_".s:man_tag_depth." = ".col(".")
@@ -142,7 +125,6 @@ func! <SID>GetPage(...)
   set modifiable
   %d
   let $MANWIDTH = winwidth(0)
-  " silent exec "r !/usr/bin/man ".s:GetCmdArg(sect, page)." | col -b"
   let l:havepage = 1
   if (s:BuildPage(sect, page) < 2)
     if (s:BuildPage('', page) < 2)
@@ -154,14 +136,6 @@ func! <SID>GetPage(...)
     endif
   endif
   if (l:havepage)
-    " " Is it OK?  It's for remove blank or message line.
-    " if getline(1) =~ "^\s*$"
-    "   silent exec "norm 2G/^[^\s]\<cr>kd1G"
-    " endif
-    " if getline('$') == ''
-    "   silent exec "norm G?^\s*[^\s]\<cr>2jdG"
-    " endif
-    " 1
     let l:rpage = substitute(getline(1), '(.*', '', '')
     let l:rsect = substitute(getline(1), '.*(\([^)]*\)).*', '\1', '')
     execute "sil! file ~/vimtmp/" . l:rpage . "_" . l:rsect . ".man"
