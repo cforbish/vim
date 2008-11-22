@@ -112,6 +112,7 @@ func! <SID>GetPage(...)
       exe "norm! " . thiswin . "\<C-W>w"
       while 1
         if &filetype == "man"
+          sil! 0file!
           break
         endif
         exe "norm! \<C-W>w"
@@ -128,17 +129,18 @@ func! <SID>GetPage(...)
   let l:havepage = 1
   if (s:BuildPage(sect, page) < 2)
     if (s:BuildPage('', page) < 2)
+      bw!
       echohl WarningMsg
       echo "\nCannot find " . page . "(" . sect . ")."
       echohl None
       let l:havepage = 0
-      bw!
     endif
   endif
   if (l:havepage)
     let l:rpage = substitute(getline(1), '(.*', '', '')
     let l:rsect = substitute(getline(1), '.*(\([^)]*\)).*', '\1', '')
     execute "sil! file ~/vimtmp/" . l:rpage . "_" . l:rsect . ".man"
+    sil! update!
     setl ft=man nomod
     " setl bufhidden=hide
     setl nobuflisted
@@ -146,7 +148,6 @@ func! <SID>GetPage(...)
     setl sw=8
     setl sts=8
     setl nomodifiable
-    sil! update!
   endif
 	if (l:lz)
 		set lz
