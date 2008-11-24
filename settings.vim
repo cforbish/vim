@@ -27,7 +27,8 @@ set shiftwidth=3
 set softtabstop=3
 
 set tags=./tags,tags,~/tags/tags
-set cdpath=.,$HOME
+set cdpath=,$HOME
+set path=,
 
 set showmatch
 
