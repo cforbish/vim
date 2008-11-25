@@ -50,6 +50,14 @@ map _= :call LabelRegs()
 map _- :call CleanRegs()
 map \v `<V`>
 
+map \cs :so ~/vim_scripts/templates/main.c
+map \c+ :so ~/vim_scripts/templates/cplus.cpp
+map \cc :so ~/vim_scripts/templates/class.cpp
+map \cj :so ~/vim_scripts/templates/java.java
+map \cp :so ~/vim_scripts/templates/perl.pl
+map \sf :so ~/vim_scripts/templates/
+map _H :so ~/vim_scripts/templates/doxheader.c
+
 if (v:version >= 600)
 	map \sp :call IspellRegion()
 	map \sr :call RegsToStar()
