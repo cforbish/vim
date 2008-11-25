@@ -46,24 +46,21 @@ else
 endif
 
 func! ManPreGetPage(cnt)
-  if a:cnt == 0
-    let old_isk = &iskeyword
-    setl iskeyword+=(,)
-    let str = expand("<cword>")
-    let &iskeyword = old_isk
-    let page = substitute(str, '(*\(\k\+\).*', '\1', '')
-    let sect = substitute(str, '\(\k\+\)(\([^()]*\)).*', '\2', '')
-    if match(sect, '^[0-9 ]\+$') == -1
-      let sect = ""
+  if (a:cnt == 0)
+    let l:str = expand("<cWORD>")
+    let l:page = substitute(l:str, '(.*', '', '')
+    let l:sect = substitute(l:str, '.*(\(.*\))', '\1', '')
+    if (match(l:sect, '^[0-9 ]\+$') == -1)
+      let l:sect = ""
     endif
-    if sect == page
-      let sect = ""
+    if (l:sect == l:page)
+      let l:sect = ""
     endif
   else
-    let sect = a:cnt
-    let page = expand("<cword>")
+    let l:sect = a:cnt
+    let l:page = expand("<cword>")
   endif
-  call s:GetPage(sect, page)
+  call s:GetPage(l:sect, l:page)
 endfunc
 
 func! <SID>GetCmdArg(sect, page)
@@ -76,7 +73,9 @@ endfunc
 func! <SID>BuildPage(sect, page)
   %d
   silent exec "r !man ".s:GetCmdArg(a:sect, a:page)." | col -b"
-  sil! normal 1Gddgue
+  sil! normal 1Gdd
+  let l:pattern = expand("<cWORD>")
+  exec "s;" . l:pattern . ";\\L&\\E;g"
   sil! g;^xxx;d
   let l:retval = strlen(getline(1))
   return l:retval
