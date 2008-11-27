@@ -66,7 +66,7 @@ map \fb :call FileBlame()
 "------------------------------------------------------------------------------
 " Commands:
 "------------------------------------------------------------------------------
-" Versions  - get log information for current file (ALS/MLS/GIT).
+" Versions  - get log information for current file (ALS/SVN/GIT).
 " GitStatus - do a git status for current file or directory (tries file first).
 " GitMan    - bring up local git documentation file for a topic.
 "------------------------------------------------------------------------------
@@ -122,6 +122,21 @@ function! CanDo(cmd)
 endfunction
 
 "------------------------------------------------------------------------------
+" AdjustPath
+"------------------------------------------------------------------------------
+" Make some necessary changes to a file path.
+"------------------------------------------------------------------------------
+function! AdjustPath(filename)
+	let l:filename = system("cygpath " . a:filename)
+	if (v:shell_error)
+		let l:filename = a:filename
+	else
+		let l:filename = substitute(l:filename, '\n', '', '')
+	endif
+	return l:filename
+endfunction
+
+"------------------------------------------------------------------------------
 " RevisionTypeOfFile
 "------------------------------------------------------------------------------
 " Get post als revision type for a:filename with is a full path to a file.
@@ -148,7 +163,8 @@ function! RevisionTypeOfFile(filename)
 		" Set MOO_ALWAYS_PASSTHRU to get the real svn to
 		" function for the info and not the one used by git.
 		"-----------------------------------------------------
-		let l:result = system("svn info " . a:filename . " | head -1")
+		let l:filename = AdjustPath(a:filename)
+		let l:result = system("svn info " . l:filename . " | head -1")
 		if (strlen(l:result) && match(l:result, 'Not a versioned resource\|is not a working copy') < 0)
 			let l:retval = "svn"
 		endif
@@ -279,7 +295,7 @@ endfunction
 "------------------------------------------------------------------------------
 " BuildFileFromSystemCmd
 "------------------------------------------------------------------------------
-" This function exists because on cygwin system does no honor a '>' character
+" This function exists because on cygwin system does not honor a '>' character
 " to redirect to a file.
 "------------------------------------------------------------------------------
 function! BuildFileFromSystemCmd(file, command)
@@ -361,12 +377,12 @@ function! DiffWithRevisionGit(revname)
 endfunction
 
 "------------------------------------------------------------------------------
-" DiffWithRevisionMls
+" DiffWithRevisionSvn
 "------------------------------------------------------------------------------
 " Get a difference between current file and some
 " version of same file as a:revname using svn and mls.
 "------------------------------------------------------------------------------
-function! DiffWithRevisionMls(revname)
+function! DiffWithRevisionSvn(revname)
 	let l:lz = &lz
 	set lz
 	let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(a:revname, '.*\/', '', 'g')
@@ -388,7 +404,8 @@ function! DiffWithRevisionMls(revname)
 			let l:revtouse = a:revname
 		endif
 	endif
-	execute "sil! !svn cat -r " . l:revtouse . " " . expand("%:p") . " > " . l:tempfile
+	let l:filename = AdjustPath(expand("%:p"))
+	call BuildFileFromSystemCmd(l:tempfile, "svn cat -r " . l:revtouse . " " . l:filename)
 	normal gg0
 	execute "vert diffsplit " . l:tempfile
 	normal hgglgg
@@ -499,7 +516,7 @@ function! DiffWithRevision(revname)
 	if (l:revtype == "git")
 		let l:errstr = DiffWithRevisionGit(a:revname)
 	elseif (l:revtype == "svn")
-		let l:errstr = DiffWithRevisionMls(a:revname)
+		let l:errstr = DiffWithRevisionSvn(a:revname)
 	elseif (l:revtype == "als")
 		let l:errstr = DiffWithRevisionAls(a:revname)
 	else
@@ -541,7 +558,7 @@ endfunction
 " Versions
 "------------------------------------------------------------------------------
 " Build a temporary file of versions for current file.
-" This works for either ALS, MLS(SVN) or GIT.
+" This works for either ALS, SVN or GIT.
 "------------------------------------------------------------------------------
 function! Versions()
 	let l:lz = &lz
@@ -617,8 +634,9 @@ function! DiffFileRevision(file, revision)
 			if (!strlen(l:oldrev))
 				let l:oldrev = l:newrev - 1
 			endif
-			sil! execute "!svn cat -r " . l:oldrev . " " . a:file . " > " . l:tmpfile . "." . l:oldrev
-			sil! execute "!svn cat -r " . l:newrev . " " . a:file . " > " . l:tmpfile . "." . l:newrev
+			let l:filename = AdjustPath(a:file)
+			sil! execute "!svn cat -r " . l:oldrev . " " . l:filename . " > " . l:tmpfile . "." . l:oldrev
+			sil! execute "!svn cat -r " . l:newrev . " " . l:filename . " > " . l:tmpfile . "." . l:newrev
 		endif
 	else
 		if (!strlen(l:oldrev))
@@ -756,7 +774,7 @@ function! DiffLineRev() range
 		let l:testrev = printf("%u", '0x' . l:revision)
 		if ((l:testrev >= 0) && (l:testrev <= 1))
 			redraw
-			echo "this line predates MLS."
+			echo "repository for file does not support blame."
 		else
 			call DiffFileRevision(expand("%:p"), l:revision)
 		endif
