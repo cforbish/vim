@@ -77,7 +77,7 @@ com! -range -nargs=0 GitStatus call GitStatus()
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
 "------------------------------------------------------------------------------
-if (isdirectory("C:\\"))
+if (match(getcwd(), '/'))
 	let g:os_slash="\\"
 	let g:git_doc_dir="C:\\cygwin\\home\\cforbish\\git\\src\\git\\Documentation\\"
 else
