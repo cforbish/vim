@@ -45,6 +45,6 @@ function! Git(...)
 			let l:command = l:command . ' ' . l:arg
 		endif
 	endfor
-	execute system(l:command)
+	echo system(l:command)
 endfunction
 
