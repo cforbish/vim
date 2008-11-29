@@ -627,16 +627,16 @@ function! DiffFileRevision(file, revision)
 			if (!strlen(l:oldrev))
 				let l:oldrev = substitute(system("git rev-parse " . a:revision . "~"), '\n', '', '')
 			endif
-			sil! execute "!git show " . l:oldrev . ":" . l:adjfile . " > " . l:tmpfile . "." . l:oldrev
-			sil! execute "!git show " . l:newrev . ":" . l:adjfile . " > " . l:tmpfile . "." . l:newrev
+			call BuildFileFromSystemCmd(l:tmpfile . "." . l:oldrev, "git show " . l:oldrev . ":" . l:adjfile)
+			call BuildFileFromSystemCmd(l:tmpfile . "." . l:newrev, "git show " . l:newrev . ":" . l:adjfile)
 			sil! execute "cd " . l:startdir
 		else
 			if (!strlen(l:oldrev))
 				let l:oldrev = l:newrev - 1
 			endif
 			let l:filename = AdjustPath(a:file)
-			sil! execute "!svn cat -r " . l:oldrev . " " . l:filename . " > " . l:tmpfile . "." . l:oldrev
-			sil! execute "!svn cat -r " . l:newrev . " " . l:filename . " > " . l:tmpfile . "." . l:newrev
+			call BuildFileFromSystemCmd(l:tmpfile . "." . l:oldrev, "svn cat -r " . l:oldrev . " " . l:filename)
+			call BuildFileFromSystemCmd(l:tmpfile . "." . l:newrev, "svn cat -r " . l:newrev . " " . l:filename)
 		endif
 	else
 		if (!strlen(l:oldrev))
