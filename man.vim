@@ -74,9 +74,9 @@ func! <SID>BuildPage(sect, page)
   %d
   silent exec "r !man ".s:GetCmdArg(a:sect, a:page)." | col -b"
   sil! normal 1Gdd
+  sil! g;^xxx;d
   let l:pattern = expand("<cWORD>")
   exec "s;" . l:pattern . ";\\L&\\E;g"
-  sil! g;^xxx;d
   let l:retval = strlen(getline(1))
   return l:retval
 endfunc
