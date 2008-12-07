@@ -262,7 +262,7 @@ endfunction
 
 function! ClassArg(classname)
 	set lz
-	r $VIMHOME/vim_scripts/templates/classarg.cpp
+	r ~/vim_scripts/templates/classarg.cpp
 	normal V/^" <AUTO_VIM_SCRIPT_TAG \d
 	sil! '<,'>s/\<classname\>/\=a:classname/g
 	normal '>dd'<dd
