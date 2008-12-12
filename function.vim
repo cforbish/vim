@@ -260,6 +260,46 @@ function! BwTmp()
 call BwPattern("\\/vimtmp\\/")
 endfunction
 
+"-------------------------------------------------------------------------------
+" BwDups
+"-------------------------------------------------------------------------------
+" Remove and unload one occurrence of buffers that are loaded twice.
+"-------------------------------------------------------------------------------
+function! BwDups()
+	if (v:version < 700)
+		echohl ErrorMsg
+		" Version 7 or better needed for use of dictionary variable type.
+		echo "Must have vim version 7 or greater for BwDups."
+		echohl None
+		return
+	endif
+	let l:lz = &lz
+	set lz
+	let oldp = @p
+	redir @p
+	sil! ls
+	redir END
+	new
+	normal "pPggdd
+	let l:filehash = { '[No Name]': 0 }
+	let l:lineno = 1
+	while (l:lineno <= line('$'))
+		let l:bufnumb = substitute(getline(l:lineno), '^\s*\(\d*\).*', '\1', '')
+		let l:bufname = substitute(getline(l:lineno), '^.*"\(.*\)".*', '\1', '')
+		if (has_key(l:filehash, l:bufname))
+			exec "bw! " . l:bufnumb
+		else
+			let l:filehash[l:bufname] = l:bufnumb
+		endif
+		let l:lineno += 1
+	endwhile
+	let @p = oldp
+	sil! bw!
+	if (!l:lz)
+		set nolz
+	endif
+endfunction
+
 function! ClassArg(classname)
 	set lz
 	r ~/vim_scripts/templates/classarg.cpp
