@@ -16,3 +16,22 @@ echo system("ls -ls")
 set shell=C:/cygwin/bin/bash
 set shellcmdflag=--login\ -c
 set shellxquote=\"
+
+#-------------------------------------------------------------------------------
+# Using cmd.exe
+#-------------------------------------------------------------------------------
+set shell=C:\WINDOWS\system32\cmd.exe
+set shellcmdflag=/c
+set shellxquote=
+
+#-------------------------------------------------------------------------------
+# Using rundll32.exe
+# This did not work
+#-------------------------------------------------------------------------------
+set shell=C:\WINDOWS\system32\rundll32.exe
+
+#-------------------------------------------------------------------------------
+# http://vim.wikia.com/wiki/Best_Vim_Tips
+#-------------------------------------------------------------------------------
+nmap \hi :update<CR>:!start c:\progra~1\intern~1\iexplore.exe <cWORD><CR>
+
