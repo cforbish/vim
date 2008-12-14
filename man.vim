@@ -76,7 +76,7 @@ func! <SID>BuildPage(sect, page)
   sil! normal 1Gdd
   sil! g;^xxx;d
   let l:pattern = expand("<cWORD>")
-  exec "s;" . l:pattern . ";\\L&\\E;g"
+  exec "sil! s;" . l:pattern . ";\\L&\\E;g"
   let l:retval = strlen(getline(1))
   return l:retval
 endfunc
