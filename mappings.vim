@@ -20,12 +20,45 @@ else
 	map _2 :set ts=2:set sw=2:set sts=2:set ts ?
 	map _1 :set ts=6:set sw=3:set sts=3:set ts ?
 endif
+
+"-------------------------------------------------------------------------------
+" Toggling mappings
+"-------------------------------------------------------------------------------
+"Toggle autoindent
+map \ta :setl invai: set ai ?
+"Toggle search highlighting.
+map \th :set invhls: set hls ?
+"Toggle line numbering.
+map \tn :setl invnumber: set number ?
+"Toggle paste mode
+map \tp :setl invpaste: set paste ?
+"Toggle spell checking
+map \ts :setl invspell: set spell ?
+"Toggle wrap mode
+map \tw :setl invwrap: set wrap ?
+"Toggle lazyredraw
+map \tz :setl invlz: set lz ?
+
+"-------------------------------------------------------------------------------
+" Browser mappings
+"-------------------------------------------------------------------------------
+map \hi :update<CR>:!start c:\progra~1\intern~1\iexplore.exe <cWORD><CR>
+map \hf :update<CR>:!start C:\progra~1\mozill~1\firefox.exe <cWORD><CR>
+map \hs :update<CR>:!start C:\progra~1\mozilla.org\SeaMonkey\seamonkey.exe <cWORD><CR>
+
+"-------------------------------------------------------------------------------
+" Control key mappings
+"-------------------------------------------------------------------------------
 map <c-n> :cn<CR>
 map <c-p> :cp<CR>
 nmap <C-Down> :tn<CR>
 nmap <C-Up> :tN<CR>
 nmap <c-right> :n<CR>
 nmap <c-left> :N<CR>
+
+"-------------------------------------------------------------------------------
+" File mappings
+"-------------------------------------------------------------------------------
 map \ff :e w:/tmp/foo
 map \fb :e $HOME/.bashrc
 map \fc :e $HOME/.cshrc
@@ -34,15 +67,11 @@ map \fa :so W:\mystuff\vimstuff\nba\sourceme.vim:cd %:h
 map \fn :so W:\mystuff\vimstuff\nascar\sourceme.vim:cd %:h
 map \fo :so W:\mystuff\vimstuff\nfl\sourceme.vim:cd %:h
 map \fp :so c:\mystuff\otherstuff\phdir\vim\phsource.vim:cd %:h
+
+"-------------------------------------------------------------------------------
+" More mappings
+"-------------------------------------------------------------------------------
 map \st :source $HOME/vim_scripts/togcolor.vim
-"Toggles search highlighting.
-map \h :set invhls: set hls ?
-"Toggles line numbering.
-map \n :set invnu: set nu ?
-"Toggles paste mode
-map \p :set invpaste: set paste ?
-"Toggles expandtab
-map \e :set invet: set et ?
 map _> :call RegsToStar()
 map _< :call StarToRegs()
 map _+ :call SelectionToRegs()
