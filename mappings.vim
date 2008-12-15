@@ -28,6 +28,7 @@ endif
 map \ta :setl invai: set ai ?
 "Toggle search highlighting.
 map \th :set invhls: set hls ?
+map \h :set invhls: set hls ?
 "Toggle line numbering.
 map \tn :setl invnumber: set number ?
 "Toggle paste mode
@@ -42,9 +43,9 @@ map \tz :setl invlz: set lz ?
 "-------------------------------------------------------------------------------
 " Browser mappings
 "-------------------------------------------------------------------------------
-map \hi :update<CR>:!start c:\progra~1\intern~1\iexplore.exe <cWORD><CR>
-map \hf :update<CR>:!start C:\progra~1\mozill~1\firefox.exe <cWORD><CR>
-map \hs :update<CR>:!start C:\progra~1\mozilla.org\SeaMonkey\seamonkey.exe <cWORD><CR>
+map \bi :update<CR>:!start c:\progra~1\intern~1\iexplore.exe <cWORD><CR>
+map \bf :update<CR>:!start C:\progra~1\mozill~1\firefox.exe <cWORD><CR>
+map \bs :update<CR>:!start C:\progra~1\mozilla.org\SeaMonkey\seamonkey.exe <cWORD><CR>
 
 "-------------------------------------------------------------------------------
 " Control key mappings
