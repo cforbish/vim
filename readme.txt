@@ -34,4 +34,8 @@ set shell=C:\WINDOWS\system32\rundll32.exe
 # http://vim.wikia.com/wiki/Best_Vim_Tips
 #-------------------------------------------------------------------------------
 nmap \hi :update<CR>:!start c:\progra~1\intern~1\iexplore.exe <cWORD><CR>
+:g/^/call setreg(0,getline(".")) | if (@0=~#"DTE") && !((@0=~#"STX") || (@0=~#"ETX")) | d | endif
+noremap <Up> gk
+noremap <Down> gj
+vmap s( <Esc>`>a)<Esc>`<i(<Esc>
 
