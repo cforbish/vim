@@ -26,6 +26,8 @@ set tabstop=3
 set shiftwidth=3
 set softtabstop=3
 
+" set shortmess=filnxtToOA
+
 set tags=./tags,tags,~/tags/tags
 set cdpath=,$HOME
 set path=,
