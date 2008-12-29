@@ -14,9 +14,9 @@ set wildmode=longest:full
 set wildchar=<Tab>
 set completeopt=preview
 
-set nows
-set ic
-set ai
+set nowrapscan
+set ignorecase
+set autoindent
 set makeprg=g++\ -Wall\ -g\ -o\ %:r\ %
 set splitright
 set ruler
