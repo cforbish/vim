@@ -721,26 +721,26 @@ function! GitStatus()
 	let l:tl = ''
 	if (&mod)
 		echo "Please save current file first."
-		return
-	endif
-	if (isdirectory(".git"))
-		let l:tl = getcwd()
 	else
-		if (RevisionTypeOfFile(expand("%:p")) == "git")
-			let l:tl = GetTopLevelAbsPathOfFile(expand("%:p"))
+		if (isdirectory(".git"))
+			let l:tl = getcwd()
 		else
-			let l:tl = GetTopLevelAbsPathOfPath(getcwd())
+			if (RevisionTypeOfFile(expand("%:p")) == "git")
+				let l:tl = GetTopLevelAbsPathOfFile(expand("%:p"))
+			else
+				let l:tl = GetTopLevelAbsPathOfPath(getcwd())
+			endif
 		endif
-	endif
-	if (strlen(l:tl))
-		execute "cd " . l:tl
-		let l:tmpfilename = BuildTmpFileName(getcwd()) . "_git_status"
-		execute "edit " . l:tmpfilename
-		%d
-		r !git status
-		update
-	else
-		echo "Could not determine a top level for current file or current directory"
+		if (strlen(l:tl))
+			execute "cd " . l:tl
+			let l:tmpfilename = BuildTmpFileName(getcwd()) . "_git_status"
+			execute "edit " . l:tmpfilename
+			%d
+			r !git status
+			update
+		else
+			echo "Could not determine a top level for current file or current directory"
+		endif
 	endif
 	if (!l:lz)
 		set nolz
