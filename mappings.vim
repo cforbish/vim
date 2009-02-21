@@ -70,6 +70,12 @@ map \fo :so W:\mystuff\vimstuff\nfl\sourceme.vim:cd %:h
 map \fp :so c:\mystuff\otherstuff\phdir\vim\phsource.vim:cd %:h
 
 "-------------------------------------------------------------------------------
+" Compiler mappings
+"-------------------------------------------------------------------------------
+map \gc :set makeprg=gcc\ -DCOMPILE_ALONE=1\ -Wall\ -g\ -o\ %:r\ %
+map \g+ :set makeprg=g++\ -DCOMPILE_ALONE=1\ -Wall\ -g\ -o\ %:r\ %
+
+"-------------------------------------------------------------------------------
 " More mappings
 "-------------------------------------------------------------------------------
 map \st :source $HOME/vim_scripts/togcolor.vim
