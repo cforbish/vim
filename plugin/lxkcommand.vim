@@ -1,3 +1,4 @@
+" vi:set ts=3 sts=3 sw=3 ft=vim et:
 
 if (v:version < 600)
 	echo "version 6 or greater of vim required for lxkcommands."
@@ -23,7 +24,7 @@ endif
 " # - (\d#) LAST   Does a diff with current file and last file.
 " S - (\dS) SNAP   Does a diff with current file and file from yesterday.
 " Q - (\dq) QUIT   Closes diff session and window to the right.
-" X - (\dx) KILL   Closes diff session and both windows.
+" X - (\dx) KILL   Closes diff session and any vimtmpdir windows.
 "
 "                                    *-*-*-H
 "                                   /
@@ -54,7 +55,7 @@ map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '
 map \d# :vert diffsplit #:windo normal gg
 map \ds :execute "call DiffSnapshot()"
 map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
-map \dx :windo call CloseDiff()
+map \dx :execute "windo call DiffQuit()"
 
 "------------------------------------------------------------------------------
 " File Mappings:
@@ -68,11 +69,13 @@ map \fb :call FileBlame()
 "------------------------------------------------------------------------------
 " Versions  - get log information for current file (ALS/SVN/GIT).
 " GitStatus - do a git status for current file or directory (tries file first).
+" GitAmmend - ammend to HEAD.
 " GitMan    - bring up local git documentation file for a topic.
 "------------------------------------------------------------------------------
 com! -nargs=0 Versions call Versions()
 com! -nargs=1 -complete=custom,GitManComplete GitMan execute "edit " . g:git_doc_dir . "<args>.txt"
 com! -range -nargs=0 GitStatus call GitStatus()
+com! -range -nargs=0 GitAmmend call GitAmmend()
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -520,7 +523,7 @@ function! DiffWithRevision(revname)
 	elseif (l:revtype == "als")
 		let l:errstr = DiffWithRevisionAls(a:revname)
 	else
-		let l:errstr = "do not know what type of version control handles current file."
+      let l:errstr = "do not know repo type of " . expand("%:p") . "."
 	endif
 	if (strlen(l:errstr))
 		echo l:errstr
@@ -720,7 +723,7 @@ function! GitStatus()
 	set lz
 	let l:tl = ''
 	if (&mod)
-		echo "Please save current file first."
+      echo "Current buffer has modifications."
 	else
 		if (isdirectory(".git"))
 			let l:tl = getcwd()
@@ -745,6 +748,50 @@ function! GitStatus()
 	if (!l:lz)
 		set nolz
 	endif
+endfunction
+
+"------------------------------------------------------------------------------
+" GitAmmend
+"------------------------------------------------------------------------------
+" Ammend to head
+"------------------------------------------------------------------------------
+function! GitAmmend()
+   let l:lz = &lz
+   set lz
+   let l:tl = ''
+   if (&mod)
+      echo "Current buffer has modifications."
+   else
+      if (isdirectory(".git"))
+         let l:tl = getcwd()
+      else
+         if (RevisionTypeOfFile(expand("%:p")) == "git")
+            let l:tl = GetTopLevelAbsPathOfFile(expand("%:p"))
+         else
+            let l:tl = GetTopLevelAbsPathOfPath(getcwd())
+         endif
+      endif
+      if (strlen(l:tl))
+         execute "cd " . l:tl
+         let l:tmpfilename = BuildTmpFileName(getcwd()) . "_git_ammend"
+         if (stridx(@%, expand(l:tmpfilename)))
+            execute "edit " . l:tmpfilename
+            %d
+            sil! r !git whatchanged HEAD~1..HEAD
+            sil! v;^    ;d
+            sil! g;^    ;s;;;g
+            sil! update
+         else
+            execute "!git commit --amend -F " . @%
+            execute "bw!"
+         endif
+      else
+         echo "Could not determine a top level for current file or current directory"
+      endif
+   endif
+   if (!l:lz)
+      set nolz
+   endif
 endfunction
 
 "------------------------------------------------------------------------------
@@ -820,7 +867,7 @@ function! FileBlame() range
 		let l:lz = &lz
 		set lz
 		let l:startdir = getcwd()
-		execute "sil! cd " . expand("%:h")
+      execute "sil! cd " . expand("%:p:h")
 		let lineno = line(".")
 		execute "new " . l:tempfile
 		if (l:revtype == "git")
@@ -841,14 +888,14 @@ function! FileBlame() range
 endfunction
 
 "------------------------------------------------------------------------------
-" CloseDiff
+" DiffQuit
 "------------------------------------------------------------------------------
-" Remove diff options and close diff files from vim tmp directory.
+" Remove diff options and close window if a vimtmpdir file.
 "------------------------------------------------------------------------------
-function! CloseDiff()
+function! DiffQuit()
 	if (&diff)
-		set fdc=0 nodiff
-		if(!stridx(expand("%:p:h"), $VIMTMPDIR))
+      set nodiff fdc=0
+      if (!stridx(expand("%:p:h"), $VIMTMPDIR))
 			bw!
 		endif
 	endif
