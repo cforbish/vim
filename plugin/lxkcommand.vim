@@ -54,7 +54,7 @@ map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '
 map \d# :vert diffsplit #:windo normal gg
 map \ds :execute "call DiffSnapshot()"
 map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
-map \dx :set lz:if &diff:windo bw!:endif:set nolz
+map \dx :windo call CloseDiff()
 
 "------------------------------------------------------------------------------
 " File Mappings:
@@ -837,6 +837,20 @@ function! FileBlame() range
 		endif
 	else
 		echo "Sorry, ALS has no concept of blame."
+	endif
+endfunction
+
+"------------------------------------------------------------------------------
+" CloseDiff
+"------------------------------------------------------------------------------
+" Remove diff options and close diff files from vim tmp directory.
+"------------------------------------------------------------------------------
+function! CloseDiff()
+	if (&diff)
+		set fdc=0 nodiff
+		if(!stridx(expand("%:p:h"), $VIMTMPDIR))
+			bw!
+		endif
 	endif
 endfunction
 
