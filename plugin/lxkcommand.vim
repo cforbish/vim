@@ -774,7 +774,7 @@ function! GitAmmend()
       if (strlen(l:tl))
          execute "cd " . l:tl
          let l:tmpfilename = BuildTmpFileName(getcwd()) . "_git_ammend"
-         if (stridx(@%, expand(l:tmpfilename)))
+         if (stridx(expand("%"), expand(l:tmpfilename)))
             execute "edit " . l:tmpfilename
             %d
             sil! r !git whatchanged HEAD~1..HEAD
