@@ -870,6 +870,7 @@ function! FileBlame() range
       execute "sil! cd " . expand("%:p:h")
 		let lineno = line(".")
 		execute "new " . l:tempfile
+      sil! %d
 		if (l:revtype == "git")
 			sil! r !git blame #
 		else
