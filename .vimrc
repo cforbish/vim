@@ -1,4 +1,10 @@
 
+function! PatchEcho(format)
+	execute "new C:\\cygwin\\home\\cforbish\\vimtmp\\patch.txt"
+	let l:failed = append(line('$'), a:format)
+	sil! update | close
+endfunction
+
 autocmd!
 
 if ($OSTYPE == "cygwin")
