@@ -310,3 +310,28 @@ function! ClassArg(classname)
 	set nolz
 endfunction
 
+"-------------------------------------------------------------------------------
+" SearchBuild
+"-------------------------------------------------------------------------------
+" Build a search pattern from a file with a pattern per line.
+"-------------------------------------------------------------------------------
+function! SearchBuild()
+   if (a:firstline == a:lastline)
+      " since only one line seliected (or no selection)
+      " use entire file as a list of search patterns
+      sil! g;^\s*$;d
+      sil! g;.*;s;;\\<&\\>;g
+      sil! %j
+      sil! s; ;\\|;g
+      sil! let @/=getline('.')
+      sil! undo
+   else
+      sil! '<,'>g;^\S.*;s;;\\<&\\>;g
+      sil! '<,'>j
+      sil! s;\s*$;;g
+      sil! s; ;\\|;g
+      sil! let @/=getline('.')
+      sil! undo
+   endif
+endfunction
+

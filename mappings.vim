@@ -84,6 +84,7 @@ map _< :call StarToRegs()
 map _+ :call SelectionToRegs()
 map _= :call LabelRegs()
 map _- :call CleanRegs()
+map \/ :call SearchBuild()
 map \v `<V`>
 
 map \cs :so ~/vim_scripts/templates/main.c
