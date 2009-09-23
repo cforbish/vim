@@ -66,6 +66,7 @@ map \fc :e $HOME/.cshrc
 map \fv :e $HOME/vim_scripts/.vimrc
 map \fa :so W:\mystuff\vimstuff\nba\sourceme.vim:cd %:h
 map \fn :so C:\mystuff\vimstuff\nascar\sourceme.vim:cd %:h
+map \fe :so C:\mystuff\documents\Vba\sourceme.vim
 map \fo :so C:\mystuff\vimstuff\nfl\sourceme.vim:cd %:h
 map \fp :so c:\mystuff\otherstuff\phdir\vim\phsource.vim:cd %:h$
 
