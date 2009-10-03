@@ -336,3 +336,21 @@ function! SearchBuild()
    endif
 endfunction
 
+"-------------------------------------------------------------------------------
+" IncludeExpr
+"-------------------------------------------------------------------------------
+" Handle includeexpr for completing filepaths to cygwin paths.
+"-------------------------------------------------------------------------------
+function! IncludeExpr(filename)
+   if (isdirectory("\\cygwin\\"))
+      let l:retval = substitute(a:filename, '^/', '\\cygwin\\', 'g')
+      let l:retval = substitute(l:retval, '/', '\\', 'g')
+      if (!filereadable(l:retval))
+         let l:retval = a:filename
+      endif
+   else
+      let l:retval = a:filename
+   endif
+   return(l:retval)
+endfunction
+

@@ -35,3 +35,5 @@ set path=,
 
 set showmatch
 
+set includeexpr=IncludeExpr(v:fname)
+
