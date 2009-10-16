@@ -46,9 +46,9 @@ map \tz :setl invlz: set lz ?
 "-------------------------------------------------------------------------------
 " Browser mappings
 "-------------------------------------------------------------------------------
-map \bi :update<CR>:!start c:\progra~1\intern~1\iexplore.exe <cWORD><CR>
-map \bf :update<CR>:!start C:\progra~1\mozill~1\firefox.exe <cWORD><CR>
-map \bs :update<CR>:!start C:\progra~1\mozilla.org\SeaMonkey\seamonkey.exe <cWORD><CR>
+map \bi :update<CR>:!start c:\progra~2\intern~1\iexplore.exe <cWORD><CR>
+map \bf :update<CR>:!start C:\progra~2\mozill~1\firefox.exe <cWORD><CR>
+map \bs :update<CR>:!start C:\progra~2\mozilla.org\SeaMonkey\seamonkey.exe <cWORD><CR>
 
 "-------------------------------------------------------------------------------
 " Control key mappings
