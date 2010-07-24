@@ -48,7 +48,8 @@ map \tz :setl invlz: set lz ?
 "-------------------------------------------------------------------------------
 map \bi :update<CR>:!start c:\progra~2\intern~1\iexplore.exe <cWORD><CR>
 map \bf :update<CR>:!start C:\progra~2\mozill~1\firefox.exe <cWORD><CR>
-map \bs :update<CR>:!start C:\progra~2\mozilla.org\SeaMonkey\seamonkey.exe <cWORD><CR>
+map \bs :update<CR>:!start C:\progra~2\SeaMonkey\seamonkey.exe <cWORD><CR>
+map \bc :update<CR>:!start C:\progra~2\Google\Chrome\Applic~1\chrome.exe <cWORD><CR>
 
 "-------------------------------------------------------------------------------
 " Control key mappings
