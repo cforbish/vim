@@ -9,7 +9,8 @@ endif
 " Diff Mappings: (ALS/MLS/GIT)
 "------------------------------------------------------------------------------
 " B - (\db) BASE   Diff just like git diff or svn diff.
-" H - (\dh) HEAD   Will see changes made to a file after git add.
+" H - (\dh) HEAD   Will see changes against current HEAD.
+" p - (\dp) HEAD~  Will see changes against previous revision.
 " M - (\dm) MASTER trunk/master pride-next/master ...
 " D - (\dd) DAILY  trunk/daily pride-next/daily ...
 " G - (\dg) BDAILY trunk/lastgood (not all branches have this).
@@ -41,6 +42,7 @@ endif
 "------------------------------------------------------------------------------
 map \db :execute "call DiffWithRevision(\"vim:base\")"
 map \dh :execute "call DiffWithRevision(\"vim:head\")"
+map \dp :execute "call DiffWithRevision(\"vim:prev\")"
 map \dm :execute "call DiffWithRevision(\"vim:master\")"
 map \dd :execute "call DiffWithRevision(\"vim:daily\")"
 map \dg :execute "call DiffWithRevision(\"vim:bdaily\")"
@@ -355,6 +357,8 @@ function! DiffWithRevisionGit(revname)
       endif
    elseif (a:revname == "vim:head")
       let l:revtouse = 'HEAD'
+   elseif (a:revname == "vim:prev")
+      let l:revtouse = 'HEAD~'
    elseif (a:revname == "vim:bdaily")
       let l:revtouse = substitute(GitRemoteBranch(l:gitdir), 'master', 'lastgood', "")
       if (!match(system("git rev-parse " . l:revtouse), '^fatal:'))
@@ -409,6 +413,9 @@ function! DiffWithRevisionSvn(revname)
    elseif (a:revname == "vim:tlver")
       let l:systemcmd = "svn info " . GetTopLevelAbsPath() . " | sed -n 's/^Revision: //p'"
       let l:revtouse = substitute(system(l:systemcmd), '\n', '', '')
+   elseif (a:revname == "vim:prev")
+      let l:systemcmd = "svn info " . GetTopLevelAbsPath() . " | sed -n 's/^Revision: //p'"
+      let l:revtouse = substitute(system(l:systemcmd), '\n', '', '') - 1
    else
       if (a:revname == "vim:master")
          let l:revtouse = "head"
