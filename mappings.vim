@@ -73,6 +73,7 @@ map \fe :so C:\mystuff\documents\Vba\sourceme.vim
 map \fq :so C:\mystuff\documents\Queries\sourceme.vim
 map \fo :so C:\mystuff\vimstuff\nfl\sourceme.vim:cd %:h
 map \fp :so c:\mystuff\otherstuff\phdir\vim\phsource.vim:cd %:h$
+map \fx :e p:\foo
 
 "-------------------------------------------------------------------------------
 " Compiler mappings
