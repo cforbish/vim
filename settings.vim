@@ -5,7 +5,6 @@
 "-------------------------------------------------------------------------------
 set nocompatible
 set history=100
-" set grepprg=grep\ -n\ $*\ /dev/null
 
 set viminfo=""
 
