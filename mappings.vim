@@ -30,6 +30,8 @@ map \ta :setl invai: set ai ?
 "Toggle search highlighting.
 map \th :set invhls: set hls ?
 map \h :set invhls: set hls ?
+"Toggle ignorecase
+map \ti :setl invic: set ic ?
 "Toggle line numbering.
 map \tn :setl invnumber: set number ?
 "Toggle paste mode
