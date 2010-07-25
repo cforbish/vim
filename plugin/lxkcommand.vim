@@ -39,13 +39,13 @@ endif
 " (https://mls:8043/mls3/lf/pride/next/wip)
 "
 "------------------------------------------------------------------------------
-map \db :execute "call DiffWithRevision(\"base\")"
-map \dh :execute "call DiffWithRevision(\"head\")"
-map \dm :execute "call DiffWithRevision(\"master\")"
-map \dd :execute "call DiffWithRevision(\"daily\")"
-map \dg :execute "call DiffWithRevision(\"bdaily\")"
-map \dt :execute "call DiffWithRevision(\"tlver\")"
-map \dc :execute "call DiffWithRevision(\"core\")"
+map \db :execute "call DiffWithRevision(\"vim:base\")"
+map \dh :execute "call DiffWithRevision(\"vim:head\")"
+map \dm :execute "call DiffWithRevision(\"vim:master\")"
+map \dd :execute "call DiffWithRevision(\"vim:daily\")"
+map \dg :execute "call DiffWithRevision(\"vim:bdaily\")"
+map \dt :execute "call DiffWithRevision(\"vim:tlver\")"
+map \dc :execute "call DiffWithRevision(\"vim:core\")"
 map \do :vert diffsplit %.orig
 map \dl :execute "call DiffLineRev()"
 map \df :vert diffsplit 
@@ -55,7 +55,7 @@ map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '
 map \d# :vert diffsplit #:windo normal gg
 map \ds :execute "call DiffSnapshot()"
 map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
-map \dx :execute "windo call DiffQuit()"<CR>
+map \dx :execute "windo call DiffQuit()"
 
 "------------------------------------------------------------------------------
 " File Mappings:
@@ -329,26 +329,26 @@ function! DiffWithRevisionGit(revname)
    if (isdirectory("C:\\"))
       let l:gitfile = substitute(expand("%"), '\\', '/', '')
    endif
-   if (a:revname == "base")
+   if (a:revname == "vim:base")
       call BuildFileFromSystemCmd(l:tempfile, "git show :" . l:gitfile)
       let l:havetmp = 1
-   elseif (a:revname == "tlver")
+   elseif (a:revname == "vim:tlver")
       let l:svnrev = substitute(system("git svn info"), '.*Revision: \(.\{-}\)\n.*', '\1', "")
       let l:revtouse = substitute(system("git svn find-rev r" . l:svnrev), '\n', '', '')
-   elseif (a:revname == "daily")
+   elseif (a:revname == "vim:daily")
       let l:revtouse = substitute(GitRemoteBranch(l:gitdir), 'master', 'daily', "")
-   elseif (a:revname == "core")
+   elseif (a:revname == "vim:core")
       let l:wipurl = substitute(system("git svn info"), '.*URL: \(.\{-}\)\n.*', '\1', "")
       call BuildFileFromSystemCmd(l:tempfile, "svn cat " . l:wipurl . "/" . l:gitfile)
       let l:havetmp = 1
-   elseif (a:revname == "master")
+   elseif (a:revname == "vim:master")
       let l:revtouse = GitRemoteBranch(l:gitdir)
       if (!strlen(l:revtouse))
          let l:revtouse = "master"
       endif
-   elseif (a:revname == "head")
+   elseif (a:revname == "vim:head")
       let l:revtouse = 'HEAD'
-   elseif (a:revname == "bdaily")
+   elseif (a:revname == "vim:bdaily")
       let l:revtouse = substitute(GitRemoteBranch(l:gitdir), 'master', 'lastgood', "")
       if (!match(system("git rev-parse " . l:revtouse), '^fatal:'))
          let l:revtouse = ""
@@ -356,6 +356,9 @@ function! DiffWithRevisionGit(revname)
       endif
    else
       let l:revtouse = a:revname
+      if (!match(l:revtouse, '^r\d'))
+         let l:revtouse = substitute(system("git svn find-rev " . l:revtouse), '\n', '', '')
+      endif
    endif
    if (strlen(l:revtouse))
       call BuildFileFromSystemCmd(l:tempfile, "git show " . l:revtouse . ":" . l:gitfile)
@@ -389,19 +392,21 @@ function! DiffWithRevisionSvn(revname)
    let l:lz = &lz
    set lz
    let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(a:revname, '.*\/', '', 'g')
-   if (a:revname == "daily")
+   if (a:revname == "vim:daily")
       let l:wipurl = system("svn info " . GetTopLevelAbsPath() . " | sed -n 's/URL: //p'")
       let l:revtouse = substitute(system("svn pg mls:daily " . l:wipurl), '\n', '', "g")
-   elseif (a:revname == "bdaily")
+   elseif (a:revname == "vim:bdaily")
       let l:wipurl = system("svn info " . GetTopLevelAbsPath() . " | sed -n 's/URL: //p'")
       let l:revtouse = substitute(system("svn pg mls:bdaily " . l:wipurl), '\n', '', "g")
-   elseif (a:revname == "tlver")
+   elseif (a:revname == "vim:tlver")
       let l:systemcmd = "svn info " . GetTopLevelAbsPath() . " | sed -n 's/^Revision: //p'"
       let l:revtouse = substitute(system(l:systemcmd), '\n', '', '')
    else
-      if (a:revname == "master")
+      if (a:revname == "vim:master")
          let l:revtouse = "head"
-      elseif (a:revname == "core")
+      elseif (a:revname == "vim:base")
+         let l:revtouse = "base"
+      elseif (a:revname == "vim:core")
          let l:revtouse = "head"
       else
          let l:revtouse = a:revname
@@ -469,9 +474,9 @@ function! DiffWithRevisionAls(revname)
    let l:lz = &lz
    set lz
    let l:revtouse = ""
-   if ((a:revname == "bdaily") || (a:revname == "daily") || (a:revname == "base") || (a:revname == "tlver"))
+   if ((a:revname == "vim:bdaily") || (a:revname == "vim:daily") || (a:revname == "vim:base") || (a:revname == "vim:tlver"))
       let l:revtouse = "daily"
-   elseif ((a:revname == "master") || (a:revname == "head") || (a:revname == "core"))
+   elseif ((a:revname == "vim:master") || (a:revname == "vim:head") || (a:revname == "vim:core"))
       let l:revtouse = "core"
    endif
    let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(l:revtouse, '.*\/', '', 'g')
@@ -627,8 +632,13 @@ function! DiffFileRevision(file, revision)
          let l:adjfile = substitute(a:file, '\\', '/', 'g')
          let l:adjfile = substitute(l:adjfile, "^" . l:adjtl . "/", '', "g")
          sil! execute "cd " . l:tl
+         if (!match(l:newrev, '^r\d'))
+            let l:newrev = substitute(system("git svn find-rev " . l:newrev), '\n', '', '')
+         endif
          if (!strlen(l:oldrev))
-            let l:oldrev = substitute(system("git rev-parse " . a:revision . "~"), '\n', '', '')
+            let l:oldrev = substitute(system("git rev-parse " . l:newrev . "~"), '\n', '', '')
+         elseif (!match(l:oldrev, '^r\d'))
+            let l:oldrev = substitute(system("git svn find-rev " . l:oldrev), '\n', '', '')
          endif
          call BuildFileFromSystemCmd(l:tmpfile . "." . l:oldrev, "git show " . l:oldrev . ":" . l:adjfile)
          call BuildFileFromSystemCmd(l:tmpfile . "." . l:newrev, "git show " . l:newrev . ":" . l:adjfile)
