@@ -316,24 +316,29 @@ endfunction
 "-------------------------------------------------------------------------------
 " Build a search pattern from a file with a pattern per line.
 "-------------------------------------------------------------------------------
-function! SearchBuild()
+function! SearchBuild(asword)
    if (a:firstline == a:lastline)
       " since only one line seliected (or no selection)
       " use entire file as a list of search patterns
       sil! g;^\s*$;d
-      sil! g;.*;s;;\\<&\\>;g
+      if (a:asword)
+         sil! g;.*;s;;\\<&\\>;g
+      else
+         sil! g;.*;s;;&;g
+      endif
       sil! %j
-      sil! s; ;\\|;g
-      sil! let @/=getline('.')
-      sil! undo
    else
-      sil! '<,'>g;^\S.*;s;;\\<&\\>;g
+      if (a:asword)
+         sil! '<,'>g;^\S.*;s;;\\<&\\>;g
+      else
+         sil! '<,'>g;^\S.*;s;;&;g
+      endif
       sil! '<,'>j
       sil! s;\s*$;;g
-      sil! s; ;\\|;g
-      sil! let @/=getline('.')
-      sil! undo
    endif
+   sil! s; ;\\|;g
+   sil! let @/=getline('.')
+   sil! undo
 endfunction
 
 "-------------------------------------------------------------------------------
