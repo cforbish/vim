@@ -39,30 +39,37 @@ endif
 " (https://mls:8043/mls3/lf/pride/next/wip)
 "
 "------------------------------------------------------------------------------
-map \db :execute "call DiffWithRevision(\"vim:base\")"
-map \dh :execute "call DiffWithRevision(\"vim:head\")"
-map \dm :execute "call DiffWithRevision(\"vim:master\")"
-map \dd :execute "call DiffWithRevision(\"vim:daily\")"
-map \dg :execute "call DiffWithRevision(\"vim:bdaily\")"
-map \dt :execute "call DiffWithRevision(\"vim:tlver\")"
-map \dc :execute "call DiffWithRevision(\"vim:core\")"
-map \do :vert diffsplit %.orig
-map \dl :execute "call DiffLineRev()"
-map \df :vert diffsplit 
-map \du :execute 'call DiffWithSVNUrl("' . input("Enter svn path: ") . '")'
-map \dr :execute "call DiffVersion()"
-map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '")'
-map \d# :vert diffsplit #:windo normal gg
-map \ds :execute "call DiffSnapshot()"
-map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
-map \dx :execute "windo call DiffQuit()"
+map \db :execute "call DiffWithRevision(\"vim:base\")"
+map \dh :execute "call DiffWithRevision(\"vim:head\")"
+map \dm :execute "call DiffWithRevision(\"vim:master\")"
+map \dd :execute "call DiffWithRevision(\"vim:daily\")"
+map \dg :execute "call DiffWithRevision(\"vim:bdaily\")"
+map \dt :execute "call DiffWithRevision(\"vim:tlver\")"
+map \dc :execute "call DiffWithRevision(\"vim:core\")"
+map \do :sil! vert diffsplit %.orig
+map \dl :execute "call DiffLineRev()"
+map \df :sil! vert diffsplit 
+map \du :execute 'call DiffWithSVNUrl("' . input("Enter svn path: ") . '")'
+map \dr :execute "call DiffVersion()"
+map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '")'
+map \d# :sil! vert diffsplit #:windo normal gg
+map \ds :execute "call DiffSnapshot()"
+" map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
+map \dq :execute "call DiffQuit()"<CR>
+map \dx :execute "call DiffQuit()"<CR>
+
+let s:diffinfo = ""
+nmap <C-S-Right> :call DiffNext('next')
+nmap <C-S-Left> :call DiffNext('prev')
+nmap <C-S-Up> :call DiffNext('curr')
+nmap <C-S-Down> :call DiffQuit()
 
 "------------------------------------------------------------------------------
 " File Mappings:
 "------------------------------------------------------------------------------
 " \fb - does a blame for current file in separate window.
 "------------------------------------------------------------------------------
-map \fb :call FileBlame()
+map \fb :call FileBlame()
 
 "------------------------------------------------------------------------------
 " Commands:
@@ -366,8 +373,9 @@ function! DiffWithRevisionGit(revname)
    endif
    if (l:havetmp)
       normal gg0
-      execute "vert diffsplit " . l:tempfile
+      execute "sil! vert diffsplit " . l:tempfile
       normal hgglgg
+      sil! redraw!
    else
       if (!strlen(l:errstr))
          let l:errstr = "cannot determine {sha1} for " . a:revname
@@ -415,8 +423,9 @@ function! DiffWithRevisionSvn(revname)
    let l:filename = AdjustPath(expand("%:p"))
    call BuildFileFromSystemCmd(l:tempfile, "svn cat -r " . l:revtouse . " " . l:filename)
    normal gg0
-   execute "vert diffsplit " . l:tempfile
+   execute "sil! vert diffsplit " . l:tempfile
    normal hgglgg
+   sil! redraw!
    if (l:lz)
       set lz
    else
@@ -500,14 +509,73 @@ function! DiffWithRevisionAls(revname)
    endif
    if (strlen(l:tempfile))
       normal gg0
-      execute "vert diffsplit " . l:tempfile
+      execute "sil! vert diffsplit " . l:tempfile
       normal hgglgg
+      sil! redraw!
    endif
    if (l:lz)
       set lz
    else
       set nolz
    endif
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffQuit
+"------------------------------------------------------------------------------
+" Use s:diffinfo to determine how to best quit a diff window.
+"------------------------------------------------------------------------------
+function! DiffQuit()
+   let l:lz = &lz
+   set lz
+   if (&diff)
+      " clean up if still diffing
+      if (!match(s:diffinfo, 'r:'))
+         sil! windo bw!
+      else
+         sil! windo set nodiff fdc=0
+         sil! bw
+         sil! bd
+         sil! e #
+      endif
+   endif
+   let &lz = l:lz
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffNext
+"------------------------------------------------------------------------------
+" Use s:diffinfo to determine last diff method and iterate to next file and
+" apply same diff.
+"------------------------------------------------------------------------------
+function! DiffNext(direction)
+   let l:lz = &lz
+   set lz
+   let l:end = 0
+   call DiffQuit()
+   if (a:direction == "next")
+      if (argidx()+1 >= argc())
+         echo "Last file"
+         let l:end = 1
+      else
+         sil! next
+      endif
+   elseif (a:direction == "prev")
+      if (argidx() == 0)
+         echo "First file"
+         let l:end = 1
+      else
+         sil! prev
+      endif
+   endif
+   if (!l:end)
+      if (!match(s:diffinfo, 'r:'))
+         call DiffFileRevision(expand("%:p"), strpart(s:diffinfo, 2))
+      elseif (!match(s:diffinfo, 'w:'))
+         call DiffWithRevision(strpart(s:diffinfo, 2))
+      endif
+   endif
+   let &lz = l:lz
 endfunction
 
 "------------------------------------------------------------------------------
@@ -519,6 +587,7 @@ endfunction
 function! DiffWithRevision(revname)
    let l:lz = &lz
    set lz
+   let s:diffinfo = 'w:' . a:revname
    let l:revtype = RevisionTypeOfFile(expand("%:p"))
    let l:errstr = ""
    if (l:revtype == "git")
@@ -533,11 +602,7 @@ function! DiffWithRevision(revname)
    if (strlen(l:errstr))
       echo l:errstr
    endif
-   if (l:lz)
-      set lz
-   else
-      set nolz
-   endif
+   let &lz = l:lz
 endfunction
 
 "------------------------------------------------------------------------------
@@ -550,8 +615,9 @@ function! DiffWithSVNUrl(urlpath)
       let l:tempfile = BuildTmpFileName(expand("%:p"))
       call BuildFileFromSystemCmd(l:tempfile, "svn cat " . a:urlpath)
       normal gg0
-      execute "vert diffsplit " . l:tempfile
+      execute "sil! vert diffsplit " . l:tempfile
       normal hgglgg
+      sil! redraw!
    else
       echo '"' . a:urlpath . '" is not a valid svn path.'
    endif
@@ -662,10 +728,11 @@ function! DiffFileRevision(file, revision)
       sil! execute "!mv -f " . a:file . "." . l:oldrev . " " . l:tmpfile . "." . l:oldrev
       sil! execute "!mv -f " . a:file . "." . l:newrev . " " . l:tmpfile . "." . l:newrev
    endif
-   let command = "vert diffsplit " . l:tmpfile . "." . l:newrev
+   let command = "sil! vert diffsplit " . l:tmpfile . "." . l:newrev
    sil! execute "e! " . l:tmpfile . "." . l:oldrev . ""
    sil! execute command
    echo l:tmpfile
+   sil! redraw!
 endfunction
 
 "------------------------------------------------------------------------------
@@ -680,7 +747,9 @@ function! DiffVersion() range
    if (stridx(getline("1"), "Revisions for file:") < 0)
       let @r = input("Enter revision to diff: ")
       let l:file = expand("%:p")
+      let s:diffinfo = 'r:' . @r
    else
+      let s:diffinfo = ''
       let l:file = substitute(getline("1"), '^.*: ', '', "g")
       if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
          let l:revtype = RevisionTypeOfFile(l:file)
@@ -856,8 +925,9 @@ function! DiffSnapshot()
    set lz
    let l:startdir = getcwd()
    execute "cd"
-   execute "vert diffsplit ~/.snapshot/sv_nightly.0/" . expand("%")
+   execute "sil! vert diffsplit ~/.snapshot/sv_nightly.0/" . expand("%")
    execute "cd " . l:startdir
+   sil! redraw!
    if (l:lz)
       set lz
    else
@@ -895,20 +965,6 @@ function! FileBlame() range
       endif
    else
       echo "Sorry, ALS has no concept of blame."
-   endif
-endfunction
-
-"------------------------------------------------------------------------------
-" DiffQuit
-"------------------------------------------------------------------------------
-" Remove diff options and close window if a vimtmpdir file.
-"------------------------------------------------------------------------------
-function! DiffQuit()
-   if (&diff)
-      set nodiff fdc=0
-      if (!stridx(expand("%:p:h"), $VIMTMPDIR))
-         bw!
-      endif
    endif
 endfunction
 
