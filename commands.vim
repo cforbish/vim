@@ -1,3 +1,4 @@
+" vi:set ts=3 sts=3 sw=3 ft=vim et:
 
 " use: Replace black cyan
 com! -range -nargs=+ Replace call Replace(<f-args>)

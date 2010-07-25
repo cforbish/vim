@@ -1,4 +1,4 @@
-" vi:set ts=2 sts=2 sw=2 et ft=vim:
+" vi:set ts=3 sts=3 sw=3 ft=vim et:
 "
 " This file stolen and hacked from $VIMRUNTIME/ftplugin/man.vim
 " Vim filetype plugin file
@@ -82,8 +82,8 @@ func! <SID>BuildPage(sect, page)
 endfunc
 
 func! <SID>GetPage(...)
-	let l:lz = &lz
-	set lz
+   let l:lz = &lz
+   set lz
   if a:0 >= 2
     let sect = a:1
     let page = a:2
@@ -148,11 +148,11 @@ func! <SID>GetPage(...)
     setl sts=8
     setl nomodifiable
   endif
-	if (l:lz)
-		set lz
-	else
-		set nolz
-	endif
+   if (l:lz)
+      set lz
+   else
+      set nolz
+   endif
 endfunc
 
 func! <SID>PopPage()

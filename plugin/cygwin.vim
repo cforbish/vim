@@ -1,7 +1,8 @@
+" vi:set ts=3 sts=3 sw=3 ft=vim et:
 
 if (v:version < 600)
-	echo "version 6 or greater of vim required for cygwin commands."
-	finish
+   echo "version 6 or greater of vim required for cygwin commands."
+   finish
 endif
 
 "------------------------------------------------------------------------------
@@ -17,8 +18,8 @@ com! -nargs=+ -complete=file Git call Git(<f-args>)
 " Convert a path to a windows path
 "------------------------------------------------------------------------------
 function! Cygwpath(path)
-	let l:retval = system("cygpath -w " . a:path)
-	return l:retval
+   let l:retval = system("cygpath -w " . a:path)
+   return l:retval
 endfunction
 
 "------------------------------------------------------------------------------
@@ -27,8 +28,8 @@ endfunction
 " Convert a path to a linux path
 "------------------------------------------------------------------------------
 function! Cygcpath(path)
-	let l:retval = system("cygpath " . a:path)
-	return l:retval
+   let l:retval = system("cygpath " . a:path)
+   return l:retval
 endfunction
 
 "------------------------------------------------------------------------------
@@ -37,14 +38,14 @@ endfunction
 " Convert paths to linux paths before calling git.
 "------------------------------------------------------------------------------
 function! Git(...)
-	let l:command = "git"
-	for l:arg in a:000
-		if (match(l:arg, '\') >= 0)
-			let l:command = l:command . ' ' . Cygcpath(l:arg)
-		else
-			let l:command = l:command . ' ' . l:arg
-		endif
-	endfor
-	echo system(l:command)
+   let l:command = "git"
+   for l:arg in a:000
+      if (match(l:arg, '\') >= 0)
+         let l:command = l:command . ' ' . Cygcpath(l:arg)
+      else
+         let l:command = l:command . ' ' . l:arg
+      endif
+   endfor
+   echo system(l:command)
 endfunction
 

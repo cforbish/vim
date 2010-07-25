@@ -1,3 +1,4 @@
+# vi:set ts=3 sts=3 sw=3 et:
 
 A list of the original files added to the git repository is in the orgfiles.txt file.
 
