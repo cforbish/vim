@@ -354,3 +354,37 @@ function! IncludeExpr(filename)
    return(l:retval)
 endfunction
 
+"-------------------------------------------------------------------------------
+" GrepList
+"-------------------------------------------------------------------------------
+" Generate a list of files using command a:command and grep the current search
+" pattern in these files.  If files match put the file in args() so :n and :N go
+" between the files.
+"-------------------------------------------------------------------------------
+function! GrepList(command)
+   let l:lz = &lz
+   set lz
+   set hls
+   let l:list = substitute(system(a:command . ' | xargs grep -l "' . @/ . '"'), '\n', ' ', 'g')
+   if (strlen(l:list))
+      exec 'n ' . l:list
+   else
+      echo "No files found that match."
+   endif
+   let &lz = l:lz
+endfunction
+
+"-------------------------------------------------------------------------------
+" GrepIter
+"-------------------------------------------------------------------------------
+" Like GrepList, but start issue vims internal grepprg feature for iterating to
+" all the matches.
+"-------------------------------------------------------------------------------
+function! GrepIter(command)
+   let l:lz = &lz
+   set lz
+   set hls
+   exec 'sil! grep "' . @/ . '" ' . substitute(system(a:command), '\n', ' ', 'g')
+   let &lz = l:lz
+endfunction
+
