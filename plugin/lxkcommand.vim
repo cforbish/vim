@@ -598,6 +598,8 @@ function! DiffNext(direction)
             call DiffSnapshot()
          elseif (!match(s:diffinfo, 'f:'))
             call DiffWithFile(strpart(s:diffinfo, 2))
+         elseif (!match(s:diffinfo, 'u:'))
+            call DiffWithSVNUrl(strpart(s:diffinfo, 2))
          endif
       else
          echo "No diff history present."
@@ -655,6 +657,7 @@ endfunction
 function! DiffWithSVNUrl(urlpath)
    let l:lz = &lz
    set lz
+   let s:diffinfo = 'u:' . a:urlpath
    if (strpart(a:urlpath, 0, 4) == "http")
       let l:tempfile = BuildTmpFileName(expand("%:p"))
       call BuildFileFromSystemCmd(l:tempfile, "svn cat " . a:urlpath)
