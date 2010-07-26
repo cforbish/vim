@@ -576,10 +576,14 @@ function! DiffNext(direction)
       endif
    endif
    if (!l:end)
-      if (!match(s:diffinfo, 'r:'))
-         call DiffFileRevision(expand("%:p"), strpart(s:diffinfo, 2))
-      elseif (!match(s:diffinfo, 'w:'))
-         call DiffWithRevision(strpart(s:diffinfo, 2))
+      if (strlen(strpart(s:diffinfo, 2)))
+         if (!match(s:diffinfo, 'r:'))
+            call DiffFileRevision(expand("%:p"), strpart(s:diffinfo, 2))
+         elseif (!match(s:diffinfo, 'w:'))
+            call DiffWithRevision(strpart(s:diffinfo, 2))
+         endif
+      else
+         echo "No diff history present."
       endif
    endif
    let &lz = l:lz
@@ -756,7 +760,7 @@ function! DiffVersion() range
       let l:file = expand("%:p")
       let s:diffinfo = 'r:' . @r
    else
-      let s:diffinfo = ''
+      let s:diffinfo = 'r:'
       let l:file = substitute(getline("1"), '^.*: ', '', "g")
       if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
          let l:revtype = RevisionTypeOfFile(l:file)
@@ -887,6 +891,7 @@ endfunction
 " in the current file.
 "------------------------------------------------------------------------------
 function! DiffLineRev() range
+   let s:diffinfo = 'r:'
    if ((!strlen($PROJECT)) || ($PROJECT == "MLS"))
       set lz
       let l:tl = GetTopLevelAbsPath()
