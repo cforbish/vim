@@ -528,6 +528,18 @@ function! DiffWithRevisionAls(revname)
 endfunction
 
 "------------------------------------------------------------------------------
+" DiffEcho
+"------------------------------------------------------------------------------
+" Display what diffinfo is set to (vim script development diagnostic tool)
+"------------------------------------------------------------------------------
+function! DiffEcho()
+   let l:lz = &lz
+   set lz
+   echo "diffinfo " . s:diffinfo
+   let &lz = l:lz
+endfunction
+
+"------------------------------------------------------------------------------
 " DiffQuit
 "------------------------------------------------------------------------------
 " Use s:diffinfo to determine how to best quit a diff window.
