@@ -330,7 +330,8 @@ function! DiffWithRevisionGit(revname)
    set lz
    let l:gitdir = GetTopLevelAbsPath()
    let l:startdir = getcwd()
-   let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(a:revname, '.*\/', '', 'g')
+   let l:revname = substitute(a:revname, 'vim:', '', '')
+   let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(l:revname, '.*\/', '', 'g')
    let l:errstr = ""
    let l:revtouse = ""
    let l:havetmp = 0
@@ -404,7 +405,8 @@ endfunction
 function! DiffWithRevisionSvn(revname)
    let l:lz = &lz
    set lz
-   let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(a:revname, '.*\/', '', 'g')
+   let l:revname = substitute(a:revname, 'vim:', '', '')
+   let l:tempfile = BuildTmpFileName(expand("%:p")) . "." . substitute(l:revname, '.*\/', '', 'g')
    if (a:revname == "vim:daily")
       let l:wipurl = system("svn info " . GetTopLevelAbsPath() . " | sed -n 's/URL: //p'")
       let l:revtouse = substitute(system("svn pg mls:daily " . l:wipurl), '\n', '', "g")
