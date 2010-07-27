@@ -54,7 +54,7 @@ map \df :DiffWithFile
 map \du :execute 'call DiffWithSVNUrl("' . input("Enter svn path: ") . '")'
 map \dr :execute "call DiffVersion()"
 map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '")'
-map \d# :sil! vert diffsplit #:windo normal gg
+map \d# :call DiffWithFile('#')
 map \ds :execute "call DiffSnapshot()"
 " map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
 map \dq :execute "call DiffQuit()"<CR>
@@ -589,7 +589,7 @@ function! DiffNext(direction)
       endif
    endif
    if (!l:end)
-      if (strlen(strpart(s:diffinfo, 2)))
+      if (strlen(strpart(s:diffinfo, 2)) && (strpart(s:diffinfo, 0, 3) != 'f:#'))
          if (!match(s:diffinfo, 'r:'))
             call DiffFileRevision(expand("%:p"), strpart(s:diffinfo, 2))
          elseif (!match(s:diffinfo, 'w:'))
