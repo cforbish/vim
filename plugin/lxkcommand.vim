@@ -20,7 +20,7 @@ endif
 " L - (\dl) LINE   Does a diff of a revision in which current line changed.
 " F - (\df) FILE   Prompts for a file to diff current file against.
 " F - (\du) URL    Prompts for a svn path to diff against.
-" R - (\dr) REV    Diff changes of one revieion (works with Versions function).
+" R - (\dr) REV    Diff changes of one revision (works with Versions function).
 " W - (\dw) WITH   Diff current file with some other revision of the same file.
 " # - (\d#) LAST   Does a diff with current file and last file.
 " S - (\dS) SNAP   Does a diff with current file and file from yesterday.
@@ -593,6 +593,8 @@ function! DiffNext(direction)
             call DiffFileRevision(expand("%:p"), strpart(s:diffinfo, 2))
          elseif (!match(s:diffinfo, 'w:'))
             call DiffWithRevision(strpart(s:diffinfo, 2))
+         elseif (!match(s:diffinfo, 's:'))
+            call DiffSnapshot()
          endif
       else
          echo "No diff history present."
@@ -948,6 +950,8 @@ function! DiffSnapshot()
    let l:lz = &lz
    set lz
    let l:startdir = getcwd()
+   " the extra space to allow repeat.
+   let s:diffinfo = 's: '
    execute "cd"
    execute "sil! vert diffsplit ~/.snapshot/sv_nightly.0/" . expand("%")
    execute "cd " . l:startdir
