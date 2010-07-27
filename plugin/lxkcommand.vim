@@ -48,9 +48,9 @@ map \dd :execute "call DiffWithRevision(\"vim:daily\")"
 map \dg :execute "call DiffWithRevision(\"vim:bdaily\")"
 map \dt :execute "call DiffWithRevision(\"vim:tlver\")"
 map \dc :execute "call DiffWithRevision(\"vim:core\")"
-map \do :sil! vert diffsplit %.orig
+map \do :call DiffWithFile('%.orig')
 map \dl :execute "call DiffLineRev()"
-map \df :sil! vert diffsplit 
+map \df :DiffWithFile 
 map \du :execute 'call DiffWithSVNUrl("' . input("Enter svn path: ") . '")'
 map \dr :execute "call DiffVersion()"
 map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '")'
@@ -85,6 +85,7 @@ com! -nargs=0 Versions call Versions()
 com! -nargs=1 -complete=custom,GitManComplete GitMan execute "edit " . g:git_doc_dir . "<args>.txt"
 com! -range -nargs=0 GitStatus call GitStatus()
 com! -range -nargs=0 GitAmmend call GitAmmend()
+com! -nargs=1 -complete=shellcmd DiffWithFile call DiffWithFile(<q-args>)
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -595,11 +596,29 @@ function! DiffNext(direction)
             call DiffWithRevision(strpart(s:diffinfo, 2))
          elseif (!match(s:diffinfo, 's:'))
             call DiffSnapshot()
+         elseif (!match(s:diffinfo, 'f:'))
+            call DiffWithFile(strpart(s:diffinfo, 2))
          endif
       else
          echo "No diff history present."
       endif
    endif
+   let &lz = l:lz
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffWithFile
+"------------------------------------------------------------------------------
+" Diff with another file (a:filename is the other file).
+"------------------------------------------------------------------------------
+function! DiffWithFile(filename)
+   let l:lz = &lz
+   set lz
+   let s:diffinfo = 'f:' . a:filename
+   normal gg0
+   execute "sil! vert diffsplit " . a:filename
+   normal hgglgg
+   sil! redraw!
    let &lz = l:lz
 endfunction
 
