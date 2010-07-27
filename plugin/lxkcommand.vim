@@ -40,38 +40,38 @@ endif
 " (https://mls:8043/mls3/lf/pride/next/wip)
 "
 "------------------------------------------------------------------------------
-map \db :execute "call DiffWithRevision(\"vim:base\")"
-map \dh :execute "call DiffWithRevision(\"vim:head\")"
-map \dp :execute "call DiffWithRevision(\"vim:prev\")"
-map \dm :execute "call DiffWithRevision(\"vim:master\")"
-map \dd :execute "call DiffWithRevision(\"vim:daily\")"
-map \dg :execute "call DiffWithRevision(\"vim:bdaily\")"
-map \dt :execute "call DiffWithRevision(\"vim:tlver\")"
-map \dc :execute "call DiffWithRevision(\"vim:core\")"
-map \do :sil! vert diffsplit %.orig
-map \dl :execute "call DiffLineRev()"
+map \db :execute "call DiffWithRevision(\"vim:base\")"
+map \dh :execute "call DiffWithRevision(\"vim:head\")"
+map \dp :execute "call DiffWithRevision(\"vim:prev\")"
+map \dm :execute "call DiffWithRevision(\"vim:master\")"
+map \dd :execute "call DiffWithRevision(\"vim:daily\")"
+map \dg :execute "call DiffWithRevision(\"vim:bdaily\")"
+map \dt :execute "call DiffWithRevision(\"vim:tlver\")"
+map \dc :execute "call DiffWithRevision(\"vim:core\")"
+map \do :sil! vert diffsplit %.orig
+map \dl :execute "call DiffLineRev()"
 map \df :sil! vert diffsplit 
-map \du :execute 'call DiffWithSVNUrl("' . input("Enter svn path: ") . '")'
-map \dr :execute "call DiffVersion()"
-map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '")'
-map \d# :sil! vert diffsplit #:windo normal gg
-map \ds :execute "call DiffSnapshot()"
-" map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
+map \du :execute 'call DiffWithSVNUrl("' . input("Enter svn path: ") . '")'
+map \dr :execute "call DiffVersion()"
+map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '")'
+map \d# :sil! vert diffsplit #:windo normal gg
+map \ds :execute "call DiffSnapshot()"
+" map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
 map \dq :execute "call DiffQuit()"<CR>
 map \dx :execute "call DiffQuit()"<CR>
 
 let s:diffinfo = ""
-nmap <C-S-Right> :call DiffNext('next')
-nmap <C-S-Left> :call DiffNext('prev')
-nmap <C-S-Up> :call DiffNext('curr')
-nmap <C-S-Down> :call DiffQuit()
+nmap <C-S-Right> :call DiffNext('next')
+nmap <C-S-Left> :call DiffNext('prev')
+nmap <C-S-Up> :call DiffNext('curr')
+nmap <C-S-Down> :call DiffQuit()
 
 "------------------------------------------------------------------------------
 " File Mappings:
 "------------------------------------------------------------------------------
 " \fb - does a blame for current file in separate window.
 "------------------------------------------------------------------------------
-map \fb :call FileBlame()
+map \fb :call FileBlame()
 
 "------------------------------------------------------------------------------
 " Commands:
