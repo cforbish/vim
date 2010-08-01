@@ -15,6 +15,22 @@ if ($OSTYPE == "cygwin")
    " let $VIMRUNTIME="/cygdrive/c/Program\ Files/Vim/vim71"
 endif
 
+"------------------------------------------------------------------------------
+" Setup cygwin only type stuff.
+"------------------------------------------------------------------------------
+if (match(getcwd(), '/'))
+   set includeexpr=AdjustPath(v:fname)
+   if (0)
+      set shell=C:/cygwin/bin/bash
+      set shellcmdflag=--login\ -c
+      set shellxquote=\"
+   else
+      set shell=C:\Windows\system32\cmd.exe
+      set shellcmdflag=/c
+      set shellxquote=""
+   endif
+endif
+
 source $HOME/vim_scripts/settings.vim
 source $HOME/vim_scripts/mappings.vim
 source $HOME/vim_scripts/commands.vim
