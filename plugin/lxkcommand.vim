@@ -26,6 +26,7 @@ endif
 " S - (\dS) SNAP   Does a diff with current file and file from yesterday.
 " Q - (\dq) QUIT   Closes diff session and window to the right.
 " X - (\dx) KILL   Closes diff session and any vimtmpdir windows.
+" V - (\dv) VCS    Does a VCSVimDiff (requires external plugin).
 "
 "                                    *-*-*-H
 "                                   /
@@ -57,6 +58,7 @@ map \dw :execute 'call DiffWithRevision("' . input("Enter other revision: ") . '
 map \d# :call DiffWithFile('#')
 map \ds :execute "call DiffSnapshot()"
 " map \dq :set lz:if &diff:windo set nodiff fdc=0:bw:bd:e #:endif:set nolz
+map \dv :VCSVimDiff 
 map \dq :execute "call DiffQuit()"<CR>
 map \dx :execute "call DiffQuit()"<CR>
 
@@ -105,21 +107,16 @@ if (!strlen($VIMTMPDIR))
    if (strlen($VIMHOME))
       if (isdirectory($VIMHOME . g:os_slash . "vimtmp"))
          let $VIMTMPDIR = $VIMHOME . g:os_slash . "vimtmp"
-      elseif (isdirectory($VIMHOME . g:os_slash . "tmp"))
-         let $VIMTMPDIR = $VIMHOME . g:os_slash . "tmp"
       endif
    elseif (strlen($HOME))
       if (isdirectory($HOME . g:os_slash . "vimtmp"))
          let $VIMTMPDIR = $HOME . g:os_slash . "vimtmp"
-      elseif (isdirectory($HOME . g:os_slash . "tmp"))
-         let $VIMTMPDIR = $HOME . g:os_slash . "tmp"
-      else
-         let $VIMTMPDIR = $HOME
       endif
-   elseif (g:os_slash == "\\")
-      let $VIMTMPDIR = "C:\\WINDOWS\\Temp"
-   else
-      let $VIMTMPDIR = "~"
+   endif
+   if (!strlen($VIMTMPDIR))
+      set shellslash
+      let $VIMTMPDIR = substitute(tempname(), '\(.*\)/.*', '\1', '')
+      set noshellslash
    endif
 endif
 
@@ -620,7 +617,7 @@ function! DiffWithFile(filename)
    set lz
    let s:diffinfo = 'f:' . a:filename
    normal gg0
-   execute "sil! vert diffsplit " . a:filename
+   execute "sil! vert diffsplit " . AdjustPath(a:filename)
    normal hgglgg
    sil! redraw!
    let &lz = l:lz
