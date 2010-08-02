@@ -21,10 +21,16 @@ endif
 if (match(getcwd(), '/'))
    set includeexpr=AdjustPath(v:fname)
    if (0)
+      " somehow causes:
+      " fatal: Not a git repository (or any of the parent directories): .git
       set shell=C:/cygwin/bin/bash
       set shellcmdflag=--login\ -c
       set shellxquote=\"
+      " my addtions
+      " set shelltype=1
    else
+      " does not work with % on command lines:
+      " :!git commit -m 'testing' %
       set shell=C:\Windows\system32\cmd.exe
       set shellcmdflag=/c
       set shellxquote=""
