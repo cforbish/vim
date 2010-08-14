@@ -6,12 +6,27 @@
 
 function! SelectionToRegs()
    " selection in format of 'a chars for reg a\nb chars for reg b to vim registers
-   if match(getline("."), "[a-zA-Z] ") == 0
-      let treg = strpart(getline("."), 0, 1)
-      let tlen = strlen(treg)
-      let ttxt = strpart(getline("."), 2, strlen(getline(".")) - 2)
-      let command = "let @" . treg . "=\"" . ttxt . "\""
-      execute command
+   let l:line = getline('.')
+   if match(l:line, "\/\/ [a-zA-Z] ") == 0
+      let l:line = substitute(l:line, '^// ', '', 'g')
+   endif
+   if match(l:line, ' \* [a-zA-Z] ') == 0
+      let l:line = substitute(l:line, '^ \* ', '', 'g')
+   endif
+   if match(l:line, '# [a-zA-Z] ') == 0
+      let l:line = substitute(l:line, '^# ', '', 'g')
+   endif
+   if match(l:line, '" [a-zA-Z] ') == 0
+      let l:line = substitute(l:line, '^" ', '', 'g')
+   endif
+   if match(l:line, "[a-zA-Z] ") == 0
+      let l:treg = strpart(l:line, 0, 1)
+      let l:tlen = strlen(l:treg)
+      let l:ttxt = strpart(l:line, 2, strlen(l:line) - 2)
+      let l:ttxt = substitute(l:ttxt, '\\', '\\\\', 'g')
+      let l:ttxt = substitute(l:ttxt, '"', '\\"', 'g')
+      let l:command = "let @" . l:treg . "=\"" . l:ttxt . "\""
+      execute l:command
    endif
 endfunction
 
