@@ -46,10 +46,10 @@ map \tz :setl invlz: set lz ?
 "-------------------------------------------------------------------------------
 " Browser mappings
 "-------------------------------------------------------------------------------
-map \bi :update<CR>:!start c:\progra~2\intern~1\iexplore.exe <cWORD><CR>
-map \bf :update<CR>:!start C:\progra~2\mozill~1\firefox.exe <cWORD><CR>
-map \bs :update<CR>:!start C:\progra~2\SeaMonkey\seamonkey.exe <cWORD><CR>
-map \bc :update<CR>:!start C:\progra~2\Google\Chrome\Applic~1\chrome.exe <cWORD><CR>
+map \bi :update<CR>:exec '!start c:\progra~2\intern~1\iexplore.exe ' . expand("<cWORD>")<CR>
+map \bf :update<CR>:exec '!start C:\progra~2\mozill~1\firefox.exe ' . expand("<cWORD>")<CR>
+map \bs :update<CR>:exec '!start C:\progra~2\SeaMonkey\seamonkey.exe ' . expand("<cWORD>")<CR>
+map \bc :update<CR>:exec '!start C:\progra~2\Google\Chrome\Applic~1\chrome.exe ' . expand("<cWORD>")<CR>
 
 "-------------------------------------------------------------------------------
 " Control key mappings
