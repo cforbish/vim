@@ -234,7 +234,7 @@ function! So(sofile) range
 endfunction
 
 function! Date()
-   return strftime("%m-%d-%y")
+   return strftime("%Y-%m-%d")
 endfunction
 
 function! SwapRemove()
