@@ -64,11 +64,11 @@ nmap <c-left> :N<CR>
 "-------------------------------------------------------------------------------
 " File mappings
 "-------------------------------------------------------------------------------
-map \ff :e w:/tmp/foo
+map \ff :e C:/tmp/foo
 map \fb :e $HOME/.bashrc
 map \fc :e $HOME/.cshrc
 map \fv :e $HOME/vim_scripts/.vimrc
-map \fa :so W:\mystuff\vimstuff\nba\sourceme.vim:cd %:h
+map \fa :so C:\mystuff\vimstuff\nba\sourceme.vim:cd %:h
 map \fn :so C:\mystuff\vimstuff\nascar\sourceme.vim:cd %:h
 map \fe :so C:\mystuff\documents\Vba\sourceme.vim
 map \fq :so C:\mystuff\documents\Queries\sourceme.vim
