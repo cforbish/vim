@@ -18,7 +18,10 @@ endif
 "------------------------------------------------------------------------------
 " Setup cygwin only type stuff.
 "------------------------------------------------------------------------------
-if (match(getcwd(), '/'))
+if (!match(getcwd(), '/'))
+   if (has("win32unix"))
+      let $VIMRUNTIME="C:\\cygwin\\usr\\share\\vim\\vim72"
+   endif
    set includeexpr=AdjustPath(v:fname)
    if (0)
       " somehow causes:
