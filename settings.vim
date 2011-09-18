@@ -22,9 +22,10 @@ set splitright
 set ruler
 set nowrap
 
-set tabstop=3
+set tabstop=8
 set shiftwidth=3
 set softtabstop=3
+set expandtab
 
 " set shortmess=filnxtToOA
 
