@@ -408,3 +408,11 @@ function! GrepIter(command)
    let &lz = l:lz
 endfunction
 
+function! Cmd(...)
+   let sav=&splitbelow
+   set splitbelow
+   new
+   let &splitbelow=sav
+   exec 'r !'.join(a:000, ' ')
+endfunction
+
