@@ -416,3 +416,13 @@ function! Cmd(...)
    exec 'r !'.join(a:000, ' ')
 endfunction
 
+function! RangeRegExArgs(search, replace, command) range
+   let args = []
+   let lineno = line("'<")
+   while lineno <= line("'>")
+      let args += [substitute(getline(lineno), a:search, a:replace, 'g')]
+      let lineno = lineno + 1
+   endwhile
+   exec a:command . ' ' . join(args)
+endfunction
+
