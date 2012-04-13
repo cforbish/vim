@@ -90,6 +90,7 @@ com! -nargs=1 -complete=custom,GitManComplete GitMan execute "edit " . g:git_doc
 com! -range -nargs=0 GitStatus call GitStatus()
 com! -range -nargs=0 GitAmmend call GitAmmend()
 com! -nargs=1 -complete=shellcmd DiffWithFile call DiffWithFile(<q-args>)
+com! -range -nargs=0 GitBlame call GitBlame()
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -704,7 +705,7 @@ function! Versions()
          if (isdirectory("C:\\"))
             let l:gitfile = substitute(l:gitfile, '\\', '/', '')
          endif
-         execute "sil! r !git log " . l:gitfile
+         execute "sil! r !git log -- " . l:gitfile
          execute "cd " . l:startdir
       else
          sil! r !svn log #
@@ -1017,5 +1018,14 @@ function! FileBlame() range
    else
       echo "Sorry, ALS has no concept of blame."
    endif
+endfunction
+
+"------------------------------------------------------------------------------
+" GitBlame
+"------------------------------------------------------------------------------
+" See revision and user of current line
+"------------------------------------------------------------------------------
+function! GitBlame()
+   exec '!git blame -L ' . line('.') . ',' . line('.') . ' ' . expand("%")
 endfunction
 
