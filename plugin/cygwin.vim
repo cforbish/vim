@@ -12,23 +12,48 @@ endif
 "------------------------------------------------------------------------------
 com! -nargs=+ -complete=file Git call Git(<f-args>)
 
+" "------------------------------------------------------------------------------
+" " Cygwpath
+" "------------------------------------------------------------------------------
+" " Convert a path to a windows path
+" "------------------------------------------------------------------------------
+" function! Cygwpath(path)
+"    let l:retval = system("cygpath -w " . a:path)
+"    return l:retval
+" endfunction
+
 "------------------------------------------------------------------------------
 " Cygwpath
 "------------------------------------------------------------------------------
 " Convert a path to a windows path
 "------------------------------------------------------------------------------
 function! Cygwpath(path)
-   let l:retval = system("cygpath -w " . a:path)
+   let l:retval = substitute(a:path, '^/cygdrive/\(.\)/', '\U\1\E:/', '')
+   if l:retval == a:path
+      let l:retval = substitute(a:path, '^', 'C:/cygwin', '')
+   endif
+   let l:retval = substitute(l:retval, '/', '\\\\', 'g')
    return l:retval
 endfunction
 
+" "------------------------------------------------------------------------------
+" " Cygcpath
+" "------------------------------------------------------------------------------
+" " Convert a path to a linux path
+" "------------------------------------------------------------------------------
+" function! Cygcpath(path)
+"    let l:retval = system("cygpath " . a:path)
+"    return l:retval
+" endfunction
+
 "------------------------------------------------------------------------------
-" Cygcpath
+" Cyglpath
 "------------------------------------------------------------------------------
 " Convert a path to a linux path
 "------------------------------------------------------------------------------
-function! Cygcpath(path)
-   let l:retval = system("cygpath " . a:path)
+function! Cyglpath(path)
+   let l:retval = substitute(a:path, '^\(.\):\\', '/cygdrive/\L\1\E/', '')
+   let l:retval = substitute(l:retval, '\\', '/', 'g')
    return l:retval
 endfunction
 
@@ -41,7 +66,7 @@ function! Git(...)
    let l:command = "git"
    for l:arg in a:000
       if (match(l:arg, '\') >= 0)
-         let l:command = l:command . ' ' . Cygcpath(l:arg)
+         let l:command = l:command . ' ' . Cyglpath(l:arg)
       else
          let l:command = l:command . ' ' . l:arg
       endif
