@@ -106,7 +106,7 @@ map \cc :so ~/vim_scripts/templates/class.cpp
 map \cj :so ~/vim_scripts/templates/java.java
 map \cp :so ~/vim_scripts/templates/perl.pl
 map \sf :so ~/vim_scripts/templates/
-map _H :so ~/vim_scripts/templates/doxheader.c
+map _H :so ~/vim_scripts/templates/typeheader.c
 
 if (v:version >= 600)
    map \sp :call IspellRegion()
