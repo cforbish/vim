@@ -338,7 +338,7 @@ function! DiffWithRevisionGit(revname)
    execute "cd " . l:gitdir
    let l:gitfile = expand("%")
    if (isdirectory("C:\\"))
-      let l:gitfile = substitute(expand("%"), '\\', '/', '')
+      let l:gitfile = substitute(expand("%"), '\\', '/', 'g')
    endif
    if (a:revname == "vim:base")
       call BuildFileFromSystemCmd(l:tempfile, "git show :" . l:gitfile)
