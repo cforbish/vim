@@ -273,6 +273,21 @@ let @p = oldp
 set nolz
 endfunction
 
+function! BwNoFile()
+   let lz = &lz
+   set lz
+   redir => info
+   sil! ls
+   redir end
+   let files = map(split(info, '\n'), 'substitute(v:val, ".*\"\\(.*\\)\".*", "\\1", "")')
+   for file in files
+      if (!filereadable(file))
+         exec "bw! " . file
+      endif
+   endfor
+   let &lz = lz
+endfunction
+
 function! BwTmp()
 call BwPattern("\\/vimtmp\\/")
 endfunction

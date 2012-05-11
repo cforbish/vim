@@ -130,6 +130,7 @@ else
 endif
 
 com! -nargs=1 BwPattern call BwPattern(<f-args>)
+com! -nargs=0 BwNoFile call BwNoFile()
 com! -nargs=0 BwTmp call BwTmp()
 com! -nargs=0 BwDups call BwDups()
 
