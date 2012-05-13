@@ -14,3 +14,6 @@ com! -nargs=1 GrepIter call GrepIter(<f-args>)
 com! -nargs=+ Cmd call Cmd(<f-args>)
 com! -nargs=+ C call Cmd(<f-args>)
 
+com! -nargs=0 BashShell call BashShell()
+com! -nargs=0 WinShell call WinShell()
+

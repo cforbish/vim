@@ -441,3 +441,25 @@ function! RangeRegExArgs(search, replace, command) range
    exec a:command . ' ' . join(args)
 endfunction
 
+"-------------------------------------------------------------------------------
+" BashShell
+"-------------------------------------------------------------------------------
+" Convert to using bash shell
+"-------------------------------------------------------------------------------
+function! BashShell()
+    set shell=C:/cygwin/bin/bash
+    set shellcmdflag=--login\ -c
+    set shellxquote=\"
+endfunction
+
+"-------------------------------------------------------------------------------
+" WinShell
+"-------------------------------------------------------------------------------
+" Convert to using cmd as shell
+"-------------------------------------------------------------------------------
+function! WinShell()
+    set shell=C:\Windows\system32\cmd.exe
+    set shellcmdflag=/c
+    set shellxquote=
+endfunction
+
