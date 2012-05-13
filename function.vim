@@ -448,7 +448,8 @@ endfunction
 "-------------------------------------------------------------------------------
 function! BashShell()
     set shell=C:/cygwin/bin/bash
-    set shellcmdflag=--login\ -c
+    " set shellcmdflag=--login\ -c
+    set shellcmdflag=-c
     set shellxquote=\"
 endfunction
 
