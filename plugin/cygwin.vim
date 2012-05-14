@@ -11,6 +11,7 @@ endif
 " Git  - Convert path names befor calling git.
 "------------------------------------------------------------------------------
 com! -nargs=+ -complete=file Git call Git(<f-args>)
+com! -nargs=+ -complete=file Cmd call Cmd(<f-args>)
 
 " "------------------------------------------------------------------------------
 " " Cygwpath
@@ -65,6 +66,24 @@ endfunction
 function! Git(...)
    let l:command = "git"
    for l:arg in a:000
+      if (match(l:arg, '\') >= 0)
+         let l:command = l:command . ' ' . Cyglpath(l:arg)
+      else
+         let l:command = l:command . ' ' . l:arg
+      endif
+   endfor
+   echo system(l:command)
+endfunction
+
+"------------------------------------------------------------------------------
+" Cmd
+"------------------------------------------------------------------------------
+" Convert paths to linux paths before calling command.
+"------------------------------------------------------------------------------
+function! Cmd(...)
+   let l:command = a:000[0]
+   let l:args = a:000[1:]
+   for l:arg in l:args
       if (match(l:arg, '\') >= 0)
          let l:command = l:command . ' ' . Cyglpath(l:arg)
       else
