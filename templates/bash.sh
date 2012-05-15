@@ -16,13 +16,14 @@ sil! set nolz
 sil! update | edit
 finish
 " <AUTO_VIM_SCRIPT_TAG 2>
-#!/usr/bin/env python
+#!/bin/bash
 # vi: set ts=8 sw=4 sts=4 et:
 
-def main():
-    print "Hello World."
+main()
+{
+    echo "Hello World."
+}
 
-if ( __name__ == "__main__"):
-    main()
+main
 
 " <AUTO_VIM_SCRIPT_TAG 3>

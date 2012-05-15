@@ -16,7 +16,7 @@ sil! set nolz
 sil! update | edit
 finish
 " <AUTO_VIM_SCRIPT_TAG 2>
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 # vi: set ts=8 sw=4 sts=4 et:
 
 def main()
