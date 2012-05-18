@@ -1,11 +1,23 @@
 
-let s:m_w = matchstr(tempname(), '\d\+') * getpid()
+function! s:GetPid()
+    return substitute(system("echo $PPID"), '\n', '', '')
+endfunction
+
+function! s:Abs(number)
+    let rc = a:number
+    if (a:number < 0)
+	let rc = -a:number
+    endif
+    return rc
+endfunction
+
+let s:m_w = matchstr(tempname(), '\d\+') * <SID>GetPid()
 let s:m_z = localtime()
 
 function! s:RandomNumber(mod)
-  let s:m_z = s:m_z + (s:m_z / 4)
-  let s:m_w = s:m_w + (s:m_w / 4)
-  return abs((s:m_z) + s:m_w) % a:mod
+    let s:m_z = s:m_z + (s:m_z / 4)
+    let s:m_w = s:m_w + (s:m_w / 4)
+    return <SID>Abs((s:m_z) + s:m_w) % a:mod
 endfunction
 
 function! YouIdiot()
@@ -13,8 +25,17 @@ function! YouIdiot()
     while answer == 2
         let answer = confirm('Are you an idiot', "&Yes\n&No", 1)
     endwhile
-    echo "It's good you agree you are an idiot."
-    echo "\n"
+    echo "\rIt's good you agree you are an idiot."
+endfunction
+
+function! Doit()
+    for idx in range(100)
+	let answer = ""
+	for idx in range(5)
+	    let answer = answer . printf("%c", 65+<SID>RandomNumber(9))
+	endfor
+	echo printf("%2d %s", idx, answer)
+    endfor
 endfunction
 
 function! MasterMind(num, end)
