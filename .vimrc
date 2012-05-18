@@ -44,4 +44,5 @@ source $HOME/vim_scripts/man.vim
 source $HOME/vim_scripts/tlist.vim
 source $HOME/vim_scripts/plugin/lxkcommand.vim
 source $HOME/vim_scripts/plugin/cygwin.vim
+source $HOME/vim_scripts/kool/mastermind.vim
 
