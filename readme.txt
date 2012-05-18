@@ -3,6 +3,15 @@
 A list of the original files added to the git repository is in the orgfiles.txt file.
 
 #-------------------------------------------------------------------------------
+# bitbucket.org
+#-------------------------------------------------------------------------------
+# Original push
+git remote add origin https://cforbish@bitbucket.org/cforbish/vim.git
+git push -u origin master
+# Clone
+git clone https://cforbish@bitbucket.org/cforbish/vim.git
+
+#-------------------------------------------------------------------------------
 # I am trying to get windows to not have output out side the vim window.
 # found:
 # http://vim.wikia.com/wiki/Vim_windows_displaying_output_inside_vim_window
