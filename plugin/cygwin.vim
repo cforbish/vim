@@ -29,9 +29,14 @@ com! -nargs=+ -complete=file Cmd call Cmd(<f-args>)
 " Convert a path to a windows path
 "------------------------------------------------------------------------------
 function! Cygwpath(path)
-   let l:retval = substitute(a:path, '^/cygdrive/\(.\)/', '\U\1\E:/', '')
-   if l:retval == a:path
-      let l:retval = substitute(a:path, '^', 'C:/cygwin', '')
+   let l:retval = a:path
+   if (match(a:path, '^\') == 0)
+      let l:retval = substitute(a:path, '^', 'C:', '')
+   else
+      let l:retval = substitute(a:path, '^/cygdrive/\(.\)/', '\U\1\E:/', '')
+      if (match(a:path, '^\\a:') == 0)
+         let l:retval = substitute(a:path, '^', 'C:/cygwin', '')
+      endif
    endif
    let l:retval = substitute(l:retval, '/', '\\\\', 'g')
    return l:retval
@@ -81,7 +86,7 @@ endfunction
 " Convert paths to linux paths before calling command.
 "------------------------------------------------------------------------------
 function! Cmd(...)
-   let l:command = a:000[0]
+   let l:command = Cyglpath(a:000[0])
    let l:args = a:000[1:]
    for l:arg in l:args
       if (match(l:arg, '\') >= 0)
