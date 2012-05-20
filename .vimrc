@@ -35,14 +35,14 @@ if (match(getcwd(), '/'))
    set includeexpr=AdjustPath(v:fname)
 endif
 
-source $HOME/vim_scripts/settings.vim
-source $HOME/vim_scripts/mappings.vim
-source $HOME/vim_scripts/commands.vim
-source $HOME/vim_scripts/function.vim
-source $HOME/vim_scripts/color.vim
-source $HOME/vim_scripts/man.vim
-source $HOME/vim_scripts/tlist.vim
-source $HOME/vim_scripts/plugin/lxkcommand.vim
-source $HOME/vim_scripts/plugin/cygwin.vim
-source $HOME/vim_scripts/kool/mastermind.vim
+source $HOME/vim/settings.vim
+source $HOME/vim/mappings.vim
+source $HOME/vim/commands.vim
+source $HOME/vim/function.vim
+source $HOME/vim/color.vim
+source $HOME/vim/man.vim
+source $HOME/vim/tlist.vim
+source $HOME/vim/plugin/lxkcommand.vim
+source $HOME/vim/plugin/cygwin.vim
+source $HOME/vim/kool/mastermind.vim
 

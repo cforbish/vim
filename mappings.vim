@@ -72,7 +72,7 @@ nmap <c-left> :N<CR>
 map \ff :e C:/tmp/foo
 map \fb :e $HOME/.bashrc
 map \fc :e $HOME/.cshrc
-map \fv :e $HOME/vim_scripts/.vimrc
+map \fv :e $HOME/vim/.vimrc
 map \fa :so C:\mystuff\vimstuff\nba\sourceme.vim:cd %:h
 map \fn :so C:\mystuff\vimstuff\nascar\sourceme.vim:cd %:h
 map \fe :so C:\mystuff\documents\Vba\sourceme.vim
@@ -90,7 +90,7 @@ map \g+ :set makeprg=g++\ -DCOMPILE_ALONE=1\ -Wall\ -g\ -o\ %:r\ %
 "-------------------------------------------------------------------------------
 " More mappings
 "-------------------------------------------------------------------------------
-map \st :source $HOME/vim_scripts/togcolor.vim
+map \st :source $HOME/vim/togcolor.vim
 map _> :call RegsToStar()
 map _< :call StarToRegs()
 map _+ :call SelectionToRegs()
@@ -100,13 +100,13 @@ map \/ :call SearchBuild(1)
 map \? :call SearchBuild(0)
 map \v `<V`>
 
-map \cs :so ~/vim_scripts/templates/main.c
-map \c+ :so ~/vim_scripts/templates/cplus.cpp
-map \cc :so ~/vim_scripts/templates/class.cpp
-map \cj :so ~/vim_scripts/templates/java.java
-map \cp :so ~/vim_scripts/templates/perl.pl
-map \sf :so ~/vim_scripts/templates/
-map _H :so ~/vim_scripts/templates/typeheader.c
+map \cs :so ~/vim/templates/main.c
+map \c+ :so ~/vim/templates/cplus.cpp
+map \cc :so ~/vim/templates/class.cpp
+map \cj :so ~/vim/templates/java.java
+map \cp :so ~/vim/templates/perl.pl
+map \sf :so ~/vim/templates/
+map _H :so ~/vim/templates/typeheader.c
 
 if (v:version >= 600)
    map \sp :call IspellRegion()
