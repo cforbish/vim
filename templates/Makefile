@@ -1,4 +1,4 @@
-" <AUTO_VIM_SCRIPT_TAG 1> vi: set ft=vim:
+" <AUTO_VIM_SCRIPT_TAG 1> vi: set ft=make:
 sil! set lz
 exe 'r ' . expand("<sfile>")
 " setup the '< and '> marks for a range for :g
