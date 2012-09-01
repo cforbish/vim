@@ -45,4 +45,5 @@ source $HOME/vim/tlist.vim
 source $HOME/vim/plugin/lxkcommand.vim
 source $HOME/vim/plugin/cygwin.vim
 source $HOME/vim/kool/mastermind.vim
+source $HOME/vim/ssh/ssh.vim
 
