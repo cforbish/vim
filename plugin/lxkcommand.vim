@@ -63,17 +63,6 @@ if (!strlen($VIMTMPDIR))
 endif
 
 "------------------------------------------------------------------------------
-" CanDo
-"------------------------------------------------------------------------------
-" Simply determine if the command passed in as a:cmd can be run on the current
-" system in the current environment.
-"------------------------------------------------------------------------------
-function! s:CanDo(cmd)
-   let result = system(a:cmd)
-   return !v:shell_error
-endfunction
-
-"------------------------------------------------------------------------------
 " AdjustPath
 "------------------------------------------------------------------------------
 " Make some necessary changes to a file path.
@@ -173,29 +162,16 @@ function! s:PathRepoType(...)
    endif
    execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
    let retval = "unknown"
-   if (isdirectory(".git") && <SID>CanDo("git --version"))
-      " try git first as it is faster of the three.
-      execute 'cd ' . expand("%:p:h")
-      let result = system("git ls-files --stage " . expand("%:t") . " | head -1")
-      if (strlen(result) && match(result, '^fatal:\|^error:'))
-         let retval = "git"
-      endif
+   if (isdirectory(".git"))
+      let retval = "git"
    endif
-   if ((retval == "unknown") && isdirectory(".hg") && <SID>CanDo("hg version"))
+   if ((retval == "unknown") && isdirectory(".hg"))
       " try git first as it is faster of the three.
-      execute 'cd ' . expand("%:p:h")
-      let result = system("hg status " . expand("%:t") . " | head -1")
-      if (!v:shell_error && match(result, '^abort:\|^?'))
-         let retval = "hg"
-      endif
+      let retval = "hg"
    endif
-   if ((retval == "unknown") && isdirectory(".svn") && <SID>CanDo("svn --version"))
+   if ((retval == "unknown") && isdirectory(".svn"))
       " try svn next as it is faster than als.
-      execute 'cd ' . expand("%:p:h")
-      let result = system("svn info " . expand("%:t") . " | head -1")
-      if (strlen(result) && match(result, 'Not a versioned resource\|is not a working copy') < 0)
-         let retval = "svn"
-      endif
+      let retval = "svn"
    endif
    execute "cd " . startdir
    return retval
@@ -219,6 +195,7 @@ endfunction
 " file as a:revname using version control system mof current file.
 "------------------------------------------------------------------------------
 function! s:DiffWithRevision(revname)
+   let s:start = reltime()
    let lz = &lz
    set lz
    let olddir = <SID>OldPwd()

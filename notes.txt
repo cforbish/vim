@@ -26,8 +26,6 @@ hg clone $(hurl hgtest)
 
 Cleanup lxkcommand.vim altogether.
 
-spaces we do not need no stinking spaces.
-
 #-------------------------------------------------------------------------------
 # Renamed
 #-------------------------------------------------------------------------------
