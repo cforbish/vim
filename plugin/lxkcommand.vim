@@ -19,6 +19,13 @@ let s:command['svn']['cat'] = 'svn cat -r <REV> <FILE>'
 " W - (\dw) WITH   Diff current file with some other revision of the same file.
 "------------------------------------------------------------------------------
 map \dw :execute 'call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'
+map \dv :VCSVimDiff 
+map \dq :execute "call <SID>DiffQuit()"<CR>
+let s:diffinfo = ""
+nmap <C-S-Right> :call <SID>DiffNext('next')
+nmap <C-S-Left> :call <SID>DiffNext('prev')
+nmap <C-S-Up> :call <SID>DiffNext('curr')
+nmap <C-S-Down> :call <SID>DiffQuit()
 
 "------------------------------------------------------------------------------
 " Commands:
@@ -194,8 +201,11 @@ endfunction
 " file as a:revname using version control system mof current file.
 "------------------------------------------------------------------------------
 function! s:DiffWithRevision(revname)
+   let lz = &lz
+   set lz
    let olddir = <SID>OldPwd()
    let startdir = getcwd()
+   let s:diffinfo = 'w:' . a:revname
    execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
    let revtype = <SID>PathRepoType(expand("%:h"))
    if revtype != "unknown"
@@ -208,5 +218,66 @@ function! s:DiffWithRevision(revname)
    endif
    execute "cd " . olddir
    execute "cd " . startdir
+   let &lz = lz
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffQuit
+"------------------------------------------------------------------------------
+" Use s:diffinfo to determine how to best quit a diff window.
+"------------------------------------------------------------------------------
+function! s:DiffQuit()
+   let lz = &lz
+   set lz
+   if (&diff)
+      " clean up if still diffing
+      if (!match(s:diffinfo, 'r:'))
+         sil! windo bw!
+      else
+         sil! windo set nodiff fdc=0
+         sil! bw
+         sil! bd
+         sil! e #
+      endif
+   endif
+   let &lz = lz
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffNext
+"------------------------------------------------------------------------------
+" Use s:diffinfo to determine last diff method and iterate to next file and
+" apply same diff.
+"------------------------------------------------------------------------------
+function! s:DiffNext(direction)
+   let lz = &lz
+   set lz
+   let end = 0
+   call <SID>DiffQuit()
+   if (a:direction == "next")
+      if (argidx()+1 >= argc())
+         echo "Last file"
+         let end = 1
+      else
+         sil! next
+      endif
+   elseif (a:direction == "prev")
+      if (argidx() == 0)
+         echo "First file"
+         let end = 1
+      else
+         sil! prev
+      endif
+   endif
+   if (!end)
+      if (strlen(strpart(s:diffinfo, 2)) && (strpart(s:diffinfo, 0, 3) != 'f:#'))
+         if (!match(s:diffinfo, 'w:'))
+            call <SID>DiffWithRevision(strpart(s:diffinfo, 2))
+         endif
+      else
+         echo "No diff history present."
+      endif
+   endif
+   let &lz = lz
 endfunction
 
