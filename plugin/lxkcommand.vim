@@ -18,14 +18,14 @@ let s:command['svn']['cat'] = 'svn cat -r <REV> <FILE>'
 "------------------------------------------------------------------------------
 " W - (\dw) WITH   Diff current file with some other revision of the same file.
 "------------------------------------------------------------------------------
-map \dw :execute 'call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'
+map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'
 map \dv :VCSVimDiff 
 map \dq :execute "call <SID>DiffQuit()"<CR>
 let s:diffinfo = ""
-nmap <C-S-Right> :call <SID>DiffNext('next')
-nmap <C-S-Left> :call <SID>DiffNext('prev')
-nmap <C-S-Up> :call <SID>DiffNext('curr')
-nmap <C-S-Down> :call <SID>DiffQuit()
+nmap <silent> <C-S-Right> :call <SID>DiffNext('next')
+nmap <silent> <C-S-Left> :call <SID>DiffNext('prev')
+nmap <silent> <C-S-Up> :call <SID>DiffNext('curr')
+nmap <silent> <C-S-Down> :call <SID>DiffQuit()
 
 "------------------------------------------------------------------------------
 " Commands:
@@ -101,7 +101,7 @@ endfunction
 function! s:BuildFileFromSystemCmd(file, command)
    execute "new " . a:file
    %d
-   execute "r !" . a:command
+   sil! execute "r !" . a:command
    normal ggdd
    update | close
 endfunction
@@ -267,7 +267,6 @@ function! s:DiffNext(direction)
    if (!end)
       if (strlen(strpart(s:diffinfo, 2)) && (strpart(s:diffinfo, 0, 3) != 'f:#'))
          if (!match(s:diffinfo, 'w:'))
-            let g:debug += [ 'calling DiffWithRevision with ' . strpart(s:diffinfo, 2) ]
             call <SID>DiffWithRevision(strpart(s:diffinfo, 2))
          endif
       else

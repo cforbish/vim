@@ -14,6 +14,8 @@ o orig.vim
 m master.vim
 f lxkcommand.vim
 t C:\cygwin\home\cforbish\vimtmp
+r DiffWithRevision
+b BuildFileFromSystemCmd
 
 git show clean_v1:plugin/lxkcommand.vim > ~/vimtmp/orig.vim
 git show origin/master:plugin/lxkcommand.vim > ~/vimtmp/master.vim
