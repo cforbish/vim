@@ -166,11 +166,11 @@ endfunction
 "------------------------------------------------------------------------------
 function! s:PathRepoType(...)
    let startdir = getcwd()
-    if a:0 > 0
-        let filename = a:1
-    else
-        let filename = expand("%:p")
-    endif
+   if a:0 > 0
+      let filename = a:1
+   else
+      let filename = expand("%:p")
+   endif
    execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
    let retval = "unknown"
    if (isdirectory(".git") && <SID>CanDo("git --version"))
