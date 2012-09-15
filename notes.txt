@@ -1,0 +1,38 @@
+# vi: set wrap:
+
+#-------------------------------------------------------------------------------
+# Registers:
+#-------------------------------------------------------------------------------
+x clean
+y mercurial
+s C:\cygwin\home\cforbish\vimtmp\ckfsvntest
+h C:\cygwin\home\cforbish\vimtmp\hgtest
+g C:\cygwin\home\cforbish\vimtmp\gittest
+c C:\cygwin\home\cforbish\vimtmp\git_ckfsvntest
+v C:\cygwin\home\cforbish\vim
+o orig.vim
+m master.vim
+f lxkcommand.vim
+
+git show clean_v1:plugin/lxkcommand.vim > ~/vimtmp/orig.vim
+git show origin/master:plugin/lxkcommand.vim > ~/vimtmp/master.vim
+
+rm -rf ckfsvntest git_ckfsvntest gittest hgtest
+svn co $(surl ckfsvntest) ckfsvntest
+git svn clone $(surl ckfsvntest) git_ckfsvntest
+git clone $(burl gittest)
+hg clone $(hurl hgtest)
+
+Cleanup lxkcommand.vim altogether.
+
+#-------------------------------------------------------------------------------
+# google svn
+#-------------------------------------------------------------------------------
+http://code.google.com/p/ckfsvntest/source/checkout
+username: cforbish@gmail.com
+password: pJ7cn8eK8dW7
+svn checkout https://ckfsvntest.googlecode.com/svn/trunk/ ckfsvntest
+cforbish@gmail.com
+pJ7cn8eK8dW7
+git svn clone https://ckfsvntest.googlecode.com/svn/trunk/ git_ckfsvntest
+
