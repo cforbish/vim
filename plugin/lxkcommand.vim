@@ -8,6 +8,11 @@ if (v:version < 600)
    finish
 endif
 
+let s:command = { 'git':{}, 'svn':{}, 'hg':{} }
+let s:command['git']['cat'] = 'git show <REV>:<FILE>'
+let s:command['hg']['cat'] = 'hg cat -r <REV> <FILE>'
+let s:command['svn']['cat'] = 'svn cat -r <REV> <FILE>'
+
 "------------------------------------------------------------------------------
 " Diff Mappings: (ALS/SVN/GIT/HG)
 "------------------------------------------------------------------------------
@@ -30,6 +35,27 @@ else
 endif
 
 "------------------------------------------------------------------------------
+" Determine a good directory to place temporary files.
+"------------------------------------------------------------------------------
+if (!strlen($VIMTMPDIR))
+   if (strlen($VIMHOME))
+      if (isdirectory($VIMHOME . s:os_slash . "vimtmp"))
+         let $VIMTMPDIR = $VIMHOME . s:os_slash . "vimtmp"
+      endif
+   elseif (strlen($HOME))
+      if (isdirectory($HOME . s:os_slash . "vimtmp"))
+         let $VIMTMPDIR = $HOME . s:os_slash . "vimtmp"
+      endif
+      let $VIMHOME=$HOME
+   endif
+   if (!strlen($VIMTMPDIR))
+      set shellslash
+      let $VIMTMPDIR = substitute(tempname(), '\(.*\)/.*', '\1', '')
+      set noshellslash
+   endif
+endif
+
+"------------------------------------------------------------------------------
 " CanDo
 "------------------------------------------------------------------------------
 " Simply determine if the command passed in as a:cmd can be run on the current
@@ -38,6 +64,35 @@ endif
 function! s:CanDo(cmd)
    let result = system(a:cmd)
    return !v:shell_error
+endfunction
+
+"------------------------------------------------------------------------------
+" PathTmpFile
+"------------------------------------------------------------------------------
+" Build a VIMTMPDIR version of file passed in as full path as a:filename
+"------------------------------------------------------------------------------
+function! s:PathTmpFile(filename)
+   if (s:os_slash == "\\")
+      let retval = substitute(a:filename, '^\(\a\):', '_\1_', "g")
+   else
+      let retval = a:filename
+   endif
+   let retval = $VIMTMPDIR . s:os_slash . substitute(retval, s:os_slash, '_', "g")
+   return retval
+endfunction
+
+"------------------------------------------------------------------------------
+" BuildFileFromSystemCmd
+"------------------------------------------------------------------------------
+" This function exists because on cygwin system does not honor a '>' character
+" to redirect to a file.
+"------------------------------------------------------------------------------
+function! s:BuildFileFromSystemCmd(file, command)
+   execute "new " . a:file
+   %d
+   execute "r !" . a:command
+   normal ggdd
+   update | close
 endfunction
 
 "------------------------------------------------------------------------------
@@ -122,13 +177,36 @@ function! s:PathRepoType(...)
 endfunction
 
 "------------------------------------------------------------------------------
+" Get OLDPWD
+"------------------------------------------------------------------------------
+function! s:OldPwd()
+   let startdir = getcwd()
+   cd -
+   let retval = getcwd()
+   execute "cd " . startdir
+   return retval
+endfunction
+
+"------------------------------------------------------------------------------
 " DiffWithRevision
 "------------------------------------------------------------------------------
 " Get a difference between current file and some version of same
 " file as a:revname using version control system mof current file.
 "------------------------------------------------------------------------------
 function! s:DiffWithRevision(revname)
+   let olddir = <SID>OldPwd()
+   let startdir = getcwd()
+   execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
    let revtype = <SID>PathRepoType(expand("%:h"))
-   echo 'revtype ' . revtype
+   if revtype != "unknown"
+      let cmd=s:command[revtype]['cat']
+      let cmd=substitute(cmd, '<FILE>', expand("%:t"), 'g')
+      let cmd=substitute(cmd, '<REV>', a:revname, 'g')
+      let tmpfile=<SID>PathTmpFile(expand("%:p"))
+      call <SID>BuildFileFromSystemCmd(tmpfile, cmd)
+      execute "sil! vert diffsplit " . tmpfile
+   endif
+   execute "cd " . olddir
+   execute "cd " . startdir
 endfunction
 

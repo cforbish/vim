@@ -13,6 +13,7 @@ v C:\cygwin\home\cforbish\vim
 o orig.vim
 m master.vim
 f lxkcommand.vim
+t C:\cygwin\home\cforbish\vimtmp
 
 git show clean_v1:plugin/lxkcommand.vim > ~/vimtmp/orig.vim
 git show origin/master:plugin/lxkcommand.vim > ~/vimtmp/master.vim
@@ -34,6 +35,7 @@ GetTopLevelAbsPathOfPath => PathTopLevel
 GetTopLevelAbsPathOfFile => PathTopLevel
 GetTopLevelAbsPath => PathTopLevel
 TopLevelPath => exec 'cd ' . <SID>PathTopLevel(expand("%"))
+BuildTmpFileName => PathTmpFile
 
 #-------------------------------------------------------------------------------
 # TODO
