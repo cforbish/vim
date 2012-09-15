@@ -443,6 +443,7 @@ function! BashShell()
     " set shellcmdflag=--login\ -c
     set shellcmdflag=-c
     set shellxquote=\"
+    set grepprg=findstr\ /n
 endfunction
 
 "-------------------------------------------------------------------------------
@@ -454,5 +455,6 @@ function! WinShell()
     set shell=C:\Windows\system32\cmd.exe
     set shellcmdflag=/c
     set shellxquote=
+    set grepprg=findstr\ /n\ /s
 endfunction
 

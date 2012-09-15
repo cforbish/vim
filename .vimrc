@@ -22,15 +22,17 @@ if (match(getcwd(), '/'))
    if (has("win32unix"))
       let $VIMRUNTIME="C:\\cygwin\\usr\\share\\vim\\vim72"
    endif
-   if (filereadable('C:\cygwin\bin\bash.exe'))
+   if (0 && filereadable('C:\cygwin\bin\bash.exe'))
       " This under evaluation
       set shell=C:/cygwin/bin/bash
       set shellcmdflag=-c
       set shellxquote=\"
+      set grepprg=findstr\ /n
    else
       set shell=C:\Windows\system32\cmd.exe
       set shellcmdflag=/c
       set shellxquote=""
+      set grepprg=findstr\ /n\ /s
    endif
    set includeexpr=AdjustPath(v:fname)
 endif
