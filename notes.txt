@@ -26,6 +26,23 @@ hg clone $(hurl hgtest)
 Cleanup lxkcommand.vim altogether.
 
 #-------------------------------------------------------------------------------
+# Renamed
+#-------------------------------------------------------------------------------
+RevisionTypeOfFile => PathRepoType
+RevisionType => PathRepoType
+GetTopLevelAbsPathOfPath => PathTopLevel
+GetTopLevelAbsPathOfFile => PathTopLevel
+GetTopLevelAbsPath => PathTopLevel
+TopLevelPath => exec 'cd ' . <SID>PathTopLevel(expand("%"))
+
+#-------------------------------------------------------------------------------
+# TODO
+#-------------------------------------------------------------------------------
+cleanup:
+MOO_ALWAYS_PASSTHRU
+PROJECT
+
+#-------------------------------------------------------------------------------
 # google svn
 #-------------------------------------------------------------------------------
 http://code.google.com/p/ckfsvntest/source/checkout
