@@ -1,9 +1,24 @@
 " vi:set ts=3 sts=3 sw=3 ft=vim et:
 
+let g:debug = []
+" echo "debug:\n" . join(g:debug, "\n")
+
 if (v:version < 600)
    echo "version 6 or greater of vim required for lxkcommands."
    finish
 endif
+
+"------------------------------------------------------------------------------
+" Diff Mappings: (ALS/SVN/GIT/HG)
+"------------------------------------------------------------------------------
+" W - (\dw) WITH   Diff current file with some other revision of the same file.
+"------------------------------------------------------------------------------
+map \dw :execute 'call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'
+
+"------------------------------------------------------------------------------
+" Commands:
+"------------------------------------------------------------------------------
+com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-args>)
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -26,21 +41,6 @@ function! s:CanDo(cmd)
 endfunction
 
 "------------------------------------------------------------------------------
-" AdjustPath
-"------------------------------------------------------------------------------
-" Make some necessary changes to a file path.
-"------------------------------------------------------------------------------
-function! AdjustPath(filename)
-   let retval = system("cygpath " . a:filename)
-   if (v:shell_error)
-      let retval = a:filename
-   else
-      let retval = substitute(retval, '\n', '', '')
-   endif
-   return retval
-endfunction
-
-"------------------------------------------------------------------------------
 " PathTopLevel
 "------------------------------------------------------------------------------
 " try to determine top level path by searching back for either .toplevel or
@@ -49,9 +49,9 @@ endfunction
 function! s:PathTopLevel(...)
    let startdir = getcwd()
    if a:0 > 0
-      let pathname = a:1
-   else
       let pathname = substitute(a:1, '^\(.*\)\' . s:os_slash . '.*', '\1', "g")
+   else
+      let pathname = getcwd()
    endif
    if (strlen(pathname) && isdirectory(pathname))
       execute "cd " . pathname
@@ -94,34 +94,41 @@ function! s:PathRepoType(...)
     else
         let filename = expand("%:p")
     endif
-   let dir = substitute(filename, '^\(.*\)\' . s:os_slash . '.*', '\1', "g")
-   let file = substitute(filename, '^.*\' . s:os_slash . '\(.*\)', '\1', "g")
-   if (strlen(dir))
-      execute "cd " . dir
-   endif
+   execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
    let retval = "unknown"
-   if (<SID>CanDo("git --version"))
+   if (isdirectory(".git") && <SID>CanDo("git --version"))
       " try git first as it is faster of the three.
-      let result = system("git ls-files --stage " . file . " | head -1")
+      let result = system("git ls-files --stage " . expand("%:t") . " | head -1")
       if (strlen(result) && match(result, '^fatal:\|^error:'))
          let retval = "git"
       endif
    endif
-   if ((retval == "unknown") && <SID>CanDo("hg version"))
+   if ((retval == "unknown") && isdirectory(".hg") && <SID>CanDo("hg version"))
       " try git first as it is faster of the three.
-      let result = system("hg status " . file . " | head -1")
-      if (match(result, '^abort:\|^?'))
+      let result = system("hg status " . expand("%:t") . " | head -1")
+      if (!v:shell_error && match(result, '^abort:\|^?'))
          let retval = "hg"
       endif
    endif
-   if ((retval == "unknown") && <SID>CanDo("svn --version"))
+   if ((retval == "unknown") && isdirectory(".svn") && <SID>CanDo("svn --version"))
       " try svn next as it is faster than als.
-      let adjpath = AdjustPath(filename)
-      let result = system("svn info " . adjpath . " | head -1")
+      let result = system("svn info " . expand("%:t") . " | head -1")
       if (strlen(result) && match(result, 'Not a versioned resource\|is not a working copy') < 0)
          let retval = "svn"
       endif
+   endif
    execute "cd " . startdir
    return retval
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffWithRevision
+"------------------------------------------------------------------------------
+" Get a difference between current file and some version of same
+" file as a:revname using version control system mof current file.
+"------------------------------------------------------------------------------
+function! s:DiffWithRevision(revname)
+   let revtype = <SID>PathRepoType(expand("%:h"))
+   echo 'revtype ' . revtype
 endfunction
 
