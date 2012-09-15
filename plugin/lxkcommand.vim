@@ -74,6 +74,21 @@ function! s:CanDo(cmd)
 endfunction
 
 "------------------------------------------------------------------------------
+" AdjustPath
+"------------------------------------------------------------------------------
+" Make some necessary changes to a file path.
+"------------------------------------------------------------------------------
+function! AdjustPath(filename)
+   let l:filename = system("cygpath " . a:filename)
+   if (v:shell_error)
+      let l:filename = a:filename
+   else
+      let l:filename = substitute(l:filename, '\n', '', '')
+   endif
+   return l:filename
+endfunction
+
+"------------------------------------------------------------------------------
 " PathTmpFile
 "------------------------------------------------------------------------------
 " Build a VIMTMPDIR version of file passed in as full path as a:filename
@@ -160,6 +175,7 @@ function! s:PathRepoType(...)
    let retval = "unknown"
    if (isdirectory(".git") && <SID>CanDo("git --version"))
       " try git first as it is faster of the three.
+      execute 'cd ' . expand("%:p:h")
       let result = system("git ls-files --stage " . expand("%:t") . " | head -1")
       if (strlen(result) && match(result, '^fatal:\|^error:'))
          let retval = "git"
@@ -167,6 +183,7 @@ function! s:PathRepoType(...)
    endif
    if ((retval == "unknown") && isdirectory(".hg") && <SID>CanDo("hg version"))
       " try git first as it is faster of the three.
+      execute 'cd ' . expand("%:p:h")
       let result = system("hg status " . expand("%:t") . " | head -1")
       if (!v:shell_error && match(result, '^abort:\|^?'))
          let retval = "hg"
@@ -174,6 +191,7 @@ function! s:PathRepoType(...)
    endif
    if ((retval == "unknown") && isdirectory(".svn") && <SID>CanDo("svn --version"))
       " try svn next as it is faster than als.
+      execute 'cd ' . expand("%:p:h")
       let result = system("svn info " . expand("%:t") . " | head -1")
       if (strlen(result) && match(result, 'Not a versioned resource\|is not a working copy') < 0)
          let retval = "svn"
@@ -210,7 +228,7 @@ function! s:DiffWithRevision(revname)
    let revtype = <SID>PathRepoType(expand("%:h"))
    if revtype != "unknown"
       let cmd=s:command[revtype]['cat']
-      let cmd=substitute(cmd, '<FILE>', expand("%:t"), 'g')
+      let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
       let cmd=substitute(cmd, '<REV>', a:revname, 'g')
       let tmpfile=<SID>PathTmpFile(expand("%:p"))
       call <SID>BuildFileFromSystemCmd(tmpfile, cmd)
@@ -272,6 +290,7 @@ function! s:DiffNext(direction)
    if (!end)
       if (strlen(strpart(s:diffinfo, 2)) && (strpart(s:diffinfo, 0, 3) != 'f:#'))
          if (!match(s:diffinfo, 'w:'))
+            let g:debug += [ 'calling DiffWithRevision with ' . strpart(s:diffinfo, 2) ]
             call <SID>DiffWithRevision(strpart(s:diffinfo, 2))
          endif
       else
