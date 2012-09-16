@@ -217,14 +217,10 @@ function! s:DiffWithRevision(revname)
       let cmd=s:commands[revtype]['cat']
       let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
       let revname = a:revname
-      let g:debug += [ "revtype " . revtype . "." ]
-      let g:debug += [ "a:revname " . a:revname . "." ]
       if (has_key(s:versions, revtype) && has_key(s:versions[revtype], a:revname))
          let revname = s:versions[revtype][a:revname]
-         let g:debug += [ "revname " . revname . "." ]
       endif
       let cmd=substitute(cmd, '<REV>', revname, 'g')
-      let g:debug += [ "cmd " . cmd . "." ]
       let tmpfile=<SID>PathTmpFile(expand("%:p"))
       call <SID>BuildFileFromSystemCmd(tmpfile, cmd)
       execute "sil! vert diffsplit " . tmpfile
