@@ -145,7 +145,6 @@ function! s:PathTopLevel(...)
    let topdir = ""
    let lastdir = ""
    let currdir = getcwd()
-   let 
    let path = ""
    while 1
       let g:debug += [ 'while cwd ' . getcwd() ]
@@ -318,8 +317,9 @@ endfunction
 
 function! TestIt()
    let g:debug = []
-   let revtype = <SID>PathRepoType(expand("%:h"))
-   echo "revtype " . revtype
+   " let revtype = <SID>PathRepoType(expand("%:h"))
+   let revtype = <SID>PathTopLevel(expand("%:p"))
+   echo "TestIt() revtype " . revtype
    echo join(g:debug, "\n")
 endfunction
 
