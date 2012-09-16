@@ -18,10 +18,13 @@ let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
 let s:lookmore = { '.svn':1 }
 
 let s:versions = { 'git':{}, 'svn':{}, 'hg':{} }
+let s:versions['git']['vim:base'] = ''
 let s:versions['git']['vim:head'] = 'HEAD'
 let s:versions['git']['vim:prev'] = 'HEAD~'
+let s:versions['svn']['vim:base'] = 'HEAD'
 let s:versions['svn']['vim:head'] = 'HEAD'
 let s:versions['svn']['vim:prev'] = 'PREV'
+let s:versions['hg']['vim:base'] = '.'
 let s:versions['hg']['vim:head'] = '.'
 let s:versions['hg']['vim:prev'] = '.^'
 
@@ -29,10 +32,12 @@ let s:versions['hg']['vim:prev'] = '.^'
 " Diff Mappings: (ALS/SVN/GIT/HG)
 "------------------------------------------------------------------------------
 " W - (\dw) WITH   Diff current file with some other revision of the same file.
+" B - (\db) BASE   Diff just like git diff or svn diff.
 " H - (\dh) HEAD   Will see changes against current HEAD.
 " p - (\dp) PREV   Will see changes against previous revision.
 "------------------------------------------------------------------------------
 map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'<CR>
+map \db :execute "call <SID>DiffWithRevision(\"vim:base\")"<CR>
 map \dh :execute "call <SID>DiffWithRevision(\"vim:head\")"<CR>
 map \dp :execute "call <SID>DiffWithRevision(\"vim:prev\")"<CR>
 map \dq :execute "call <SID>DiffQuit()"<CR>
