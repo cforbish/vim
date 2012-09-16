@@ -164,6 +164,10 @@ function! s:PathTopLevel(...)
    return retval
 endfunction
 
+let s:lookorder = [ 'git', 'hg', 'svn' ]
+let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
+let s:lookmore = { 'svn':1 }
+
 "------------------------------------------------------------------------------
 " PathRepoType
 "------------------------------------------------------------------------------
@@ -178,17 +182,16 @@ function! s:PathRepoType(...)
    endif
    execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
    let retval = "unknown"
-   if (isdirectory(".git"))
-      let retval = "git"
-   endif
-   if ((retval == "unknown") && isdirectory(".hg"))
-      " try git first as it is faster of the three.
-      let retval = "hg"
-   endif
-   if ((retval == "unknown") && isdirectory(".svn"))
-      " try svn next as it is faster than als.
-      let retval = "svn"
-   endif
+   for key in s:lookorder
+      let g:debug += [ "key " . key ]
+      let path=s:lookfor[key]
+      let g:debug += [ "path " . path ]
+      if (isdirectory(path))
+         let retval = key
+         let g:debug += [ "breaking..." ]
+         break
+      endif
+   endfor
    execute "cd " . startdir
    return retval
 endfunction
@@ -293,5 +296,10 @@ function! s:DiffNext(direction)
       endif
    endif
    let &lz = lz
+endfunction
+
+function! TestIt()
+   let stat = <SID>PathRepoType()
+   echo "stat " . stat
 endfunction
 
