@@ -13,6 +13,10 @@ let s:commands['git']['cat'] = 'git show <REV>:<FILE>'
 let s:commands['hg']['cat'] = 'hg cat -r <REV> <FILE>'
 let s:commands['svn']['cat'] = 'svn cat -r <REV> <FILE>'
 
+let s:lookorder = [ 'git', 'hg', 'svn' ]
+let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
+let s:lookmore = { '.svn':1 }
+
 let s:versions = { 'git':{}, 'svn':{}, 'hg':{} }
 let s:versions['git']['vim:head'] = 'HEAD'
 let s:versions['git']['vim:prev'] = 'HEAD~'
@@ -122,10 +126,6 @@ function! s:BuildFileFromSystemCmd(file, command)
    update | close
 endfunction
 
-let s:lookorder = [ 'git', 'hg', 'svn' ]
-let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
-let s:lookmore = { '.svn':1 }
-
 "------------------------------------------------------------------------------
 " PathTopLevel
 "------------------------------------------------------------------------------
@@ -147,22 +147,18 @@ function! s:PathTopLevel(...)
    let currdir = getcwd()
    let path = ""
    while 1
-      let g:debug += [ 'while cwd ' . getcwd() ]
       for key in s:lookorder
          let path=s:lookfor[key]
-         let g:debug += [ 'path ' . path ]
          if (isdirectory(path))
-            let g:debug += [ "found " . path ]
             break
          endif
          let path = ""
       endfor
-      let g:debug += [ 'checking ' . path ]
       if ((strlen(path) && !has_key(s:lookmore, path))
          \ || (currdir == $VIMHOME) || (currdir == lastdir))
-         let g:debug += [ path . " caused a break" ]
          break
       endif
+      let lastdir = getcwd()
       if (has_key(s:lookmore, path))
          let topdir = lastdir
       endif
@@ -173,15 +169,12 @@ function! s:PathTopLevel(...)
       endif
       let currdir = getcwd()
    endwhile
-   let g:debug += [ 'endwhile cwd ' . getcwd() ]
-   let g:debug += [ 'path ' . path ]
    if (isdirectory(path))
       let retval = getcwd()
    else
       let retval = ""
    endif
    execute "cd " . startdir
-   let g:debug += [ 'final retval ' . retval ]
    return retval
 endfunction
 
@@ -317,9 +310,6 @@ endfunction
 
 function! TestIt()
    let g:debug = []
-   " let revtype = <SID>PathRepoType(expand("%:h"))
-   let revtype = <SID>PathTopLevel(expand("%:p"))
-   echo "TestIt() revtype " . revtype
    echo join(g:debug, "\n")
 endfunction
 
