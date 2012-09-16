@@ -122,6 +122,10 @@ function! s:BuildFileFromSystemCmd(file, command)
    update | close
 endfunction
 
+let s:lookorder = [ 'git', 'hg', 'svn' ]
+let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
+let s:lookmore = { '.svn':1 }
+
 "------------------------------------------------------------------------------
 " PathTopLevel
 "------------------------------------------------------------------------------
@@ -141,32 +145,46 @@ function! s:PathTopLevel(...)
    let topdir = ""
    let lastdir = ""
    let currdir = getcwd()
-   while (!filereadable(".toplevel") && !isdirectory(".git")  && !isdirectory(".hg")
-      \ && (currdir != $VIMHOME) && (currdir != lastdir))
-      let lastdir = getcwd()
-      if (isdirectory(".svn"))
+   let 
+   let path = ""
+   while 1
+      let g:debug += [ 'while cwd ' . getcwd() ]
+      for key in s:lookorder
+         let path=s:lookfor[key]
+         let g:debug += [ 'path ' . path ]
+         if (isdirectory(path))
+            let g:debug += [ "found " . path ]
+            break
+         endif
+         let path = ""
+      endfor
+      let g:debug += [ 'checking ' . path ]
+      if ((strlen(path) && !has_key(s:lookmore, path))
+         \ || (currdir == $VIMHOME) || (currdir == lastdir))
+         let g:debug += [ path . " caused a break" ]
+         break
+      endif
+      if (has_key(s:lookmore, path))
          let topdir = lastdir
       endif
       cd ..
-      if (strlen(topdir) && !isdirectory(".svn"))
+      if (strlen(topdir) && !isdirectory(path))
          execute "cd " . currdir
          break
       endif
       let currdir = getcwd()
    endwhile
-   if (filereadable(".toplevel") || isdirectory(".git") || isdirectory(".hg")
-      \ || isdirectory(".svn"))
+   let g:debug += [ 'endwhile cwd ' . getcwd() ]
+   let g:debug += [ 'path ' . path ]
+   if (isdirectory(path))
       let retval = getcwd()
    else
       let retval = ""
    endif
    execute "cd " . startdir
+   let g:debug += [ 'final retval ' . retval ]
    return retval
 endfunction
-
-let s:lookorder = [ 'git', 'hg', 'svn' ]
-let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
-let s:lookmore = { 'svn':1 }
 
 "------------------------------------------------------------------------------
 " PathRepoType
@@ -299,7 +317,9 @@ function! s:DiffNext(direction)
 endfunction
 
 function! TestIt()
-   let stat = <SID>PathRepoType()
-   echo "stat " . stat
+   let g:debug = []
+   let revtype = <SID>PathRepoType(expand("%:h"))
+   echo "revtype " . revtype
+   echo join(g:debug, "\n")
 endfunction
 
