@@ -78,14 +78,10 @@ endif
 "------------------------------------------------------------------------------
 " Make some necessary changes to a file path.
 "------------------------------------------------------------------------------
-function! AdjustPath(filename)
-   let l:filename = system("cygpath " . a:filename)
-   if (v:shell_error)
-      let l:filename = a:filename
-   else
-      let l:filename = substitute(l:filename, '\n', '', '')
-   endif
-   return l:filename
+function! AdjustPath(path)
+   let retval = substitute(a:path, '^\(.\):\\', '/cygdrive/\L\1\E/', '')
+   let retval = substitute(retval, '\\', '/', 'g')
+   return retval
 endfunction
 
 "------------------------------------------------------------------------------
@@ -112,7 +108,16 @@ endfunction
 function! s:BuildFileFromSystemCmd(file, command)
    execute "new " . a:file
    %d
+   let shell = &shell
+   let shellcmdflag = &shellcmdflag
+   let shellxquote = &shellxquote
+   set shell=C:/cygwin/bin/bash
+   set shellcmdflag=-c
+   set shellxquote=\"
    sil! execute "r !" . a:command
+   let &shellxquote = shellxquote
+   let &shellcmdflag = shellcmdflag
+   let &shell = shell
    normal ggdd
    update | close
 endfunction
