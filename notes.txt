@@ -27,6 +27,7 @@ git clone $(burl gittest)
 hg clone $(hurl hgtest)
 
 Cleanup lxkcommand.vim altogether.
+going back back back
 
 #-------------------------------------------------------------------------------
 # Renamed

@@ -13,19 +13,30 @@ let s:command['git']['cat'] = 'git show <REV>:<FILE>'
 let s:command['hg']['cat'] = 'hg cat -r <REV> <FILE>'
 let s:command['svn']['cat'] = 'svn cat -r <REV> <FILE>'
 
+let s:versions = { 'git':{}, 'svn':{}, 'hg':{} }
+let s:versions['git']['vim:head'] = 'HEAD'
+let s:versions['git']['vim:prev'] = 'HEAD~'
+let s:versions['svn']['vim:head'] = 'HEAD'
+let s:versions['svn']['vim:prev'] = 'PREV'
+let s:versions['hg']['vim:head'] = '.'
+let s:versions['hg']['vim:prev'] = '.^'
+
 "------------------------------------------------------------------------------
 " Diff Mappings: (ALS/SVN/GIT/HG)
 "------------------------------------------------------------------------------
 " W - (\dw) WITH   Diff current file with some other revision of the same file.
+" H - (\dh) HEAD   Will see changes against current HEAD.
+" p - (\dp) PREV   Will see changes against previous revision.
 "------------------------------------------------------------------------------
-map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'
-map \dv :VCSVimDiff 
+map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'<CR>
+map \dh :execute "call <SID>DiffWithRevision(\"vim:head\")"<CR>
+map \dp :execute "call <SID>DiffWithRevision(\"vim:prev\")"<CR>
 map \dq :execute "call <SID>DiffQuit()"<CR>
 let s:diffinfo = ""
-nmap <silent> <C-S-Right> :call <SID>DiffNext('next')
-nmap <silent> <C-S-Left> :call <SID>DiffNext('prev')
-nmap <silent> <C-S-Up> :call <SID>DiffNext('curr')
-nmap <silent> <C-S-Down> :call <SID>DiffQuit()
+nmap <silent> <C-S-Right> :sil! call <SID>DiffNext('next')<CR>
+nmap <silent> <C-S-Left> :sil! call <SID>DiffNext('prev')<CR>
+nmap <silent> <C-S-Up> :sil! call <SID>DiffNext('curr')<CR>
+nmap <silent> <C-S-Down> :sil! call <SID>DiffQuit()<CR>
 
 "------------------------------------------------------------------------------
 " Commands:
@@ -195,7 +206,6 @@ endfunction
 " file as a:revname using version control system mof current file.
 "------------------------------------------------------------------------------
 function! s:DiffWithRevision(revname)
-   let s:start = reltime()
    let lz = &lz
    set lz
    let olddir = <SID>OldPwd()
