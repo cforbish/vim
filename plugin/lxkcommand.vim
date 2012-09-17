@@ -54,6 +54,7 @@ com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-
 com! -nargs=+ -complete=file Git call <SID>Cmd("git", <f-args>)
 com! -nargs=+ -complete=file Hg call <SID>Cmd("hg", <f-args>)
 com! -nargs=+ -complete=file Svn call <SID>Cmd("svn", <f-args>)
+com! -nargs=+ -complete=file VF call <SID>VF(<f-args>)
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -152,6 +153,16 @@ function! s:BuildFileFromSystemCmd(file, command)
    update | close
 endfunction
 
+function! s:VF(...)
+   echo "VF number args " . a:0
+   echo "VF number max " . len(a:000)
+   let tmpfile=<SID>PathTmpFile(getcwd() . '_' . join(a:000, "_"))
+   let command=join(a:000, " ")
+   echo "VF number file " . tmpfile
+   call <SID>BuildFileFromSystemCmd(tmpfile, command)
+   execute 'e ' . tmpfile
+endfunction
+
 "------------------------------------------------------------------------------
 " PathTopLevel
 "------------------------------------------------------------------------------
@@ -219,12 +230,9 @@ function! s:PathRepoType(...)
    execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
    let retval = "unknown"
    for key in s:lookorder
-      let g:debug += [ "key " . key ]
       let path=s:lookfor[key]
-      let g:debug += [ "path " . path ]
       if (isdirectory(path))
          let retval = key
-         let g:debug += [ "breaking..." ]
          break
       endif
    endfor
