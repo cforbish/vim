@@ -51,6 +51,9 @@ nmap <silent> <C-S-Down> :sil! call <SID>DiffQuit()<CR>
 " Commands:
 "------------------------------------------------------------------------------
 com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-args>)
+com! -nargs=+ -complete=file Git call <SID>Cmd("git", <f-args>)
+com! -nargs=+ -complete=file Hg call <SID>Cmd("hg", <f-args>)
+com! -nargs=+ -complete=file Svn call <SID>Cmd("svn", <f-args>)
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -91,6 +94,24 @@ function! AdjustPath(path)
    let retval = substitute(a:path, '^\(.\):\\', '/cygdrive/\L\1\E/', '')
    let retval = substitute(retval, '\\', '/', 'g')
    return retval
+endfunction
+
+"------------------------------------------------------------------------------
+" Cmd
+"------------------------------------------------------------------------------
+" Convert paths to linux paths before calling command.
+"------------------------------------------------------------------------------
+function! s:Cmd(...)
+   let l:command = AdjustPath(a:000[0])
+   let l:args = a:000[1:]
+   for l:arg in l:args
+      if (match(l:arg, '\') >= 0)
+         let l:command = l:command . ' ' . AdjustPath(l:arg)
+      else
+         let l:command = l:command . ' ' . l:arg
+      endif
+   endfor
+   echo system(l:command)
 endfunction
 
 "------------------------------------------------------------------------------
