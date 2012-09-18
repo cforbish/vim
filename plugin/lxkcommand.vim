@@ -12,6 +12,9 @@ let s:commands = { 'git':{}, 'svn':{}, 'hg':{} }
 let s:commands['git']['cat'] = 'git show <REV>:<FILE>'
 let s:commands['hg']['cat'] = 'hg cat -r <REV> <FILE>'
 let s:commands['svn']['cat'] = 'svn cat -r <REV> <FILE>'
+let s:commands['git']['blame'] = 'git blame <FILE>'
+let s:commands['hg']['blame'] = 'hg blame <FILE>'
+let s:commands['svn']['blame'] = 'svn blame <FILE>'
 
 let s:lookorder = [ 'git', 'hg', 'svn' ]
 let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
@@ -48,6 +51,13 @@ nmap <silent> <C-S-Up> :sil! call <SID>DiffNext('curr')<CR>
 nmap <silent> <C-S-Down> :sil! call <SID>DiffQuit()<CR>
 
 "------------------------------------------------------------------------------
+" File Mappings:
+"------------------------------------------------------------------------------
+" \fb - does a blame for current file in separate window.
+"------------------------------------------------------------------------------
+map \fb :call <SID>FileBlame()<CR>
+
+"------------------------------------------------------------------------------
 " Commands:
 "------------------------------------------------------------------------------
 com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-args>)
@@ -56,6 +66,7 @@ com! -nargs=+ -complete=file Hg call <SID>Cmd("hg", <f-args>)
 com! -nargs=+ -complete=file Svn call <SID>Cmd("svn", <f-args>)
 com! -nargs=+ -complete=file VF call <SID>VF(<f-args>)
 com! -range -nargs=0 GitAmmend call <SID>GitAmmend()
+com! -range -nargs=0 GitBlame call <SID>GitBlame()
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -385,6 +396,46 @@ function! s:GitAmmend()
       endif
    endif
    let &lz = lz
+endfunction
+
+"------------------------------------------------------------------------------
+" GitBlame
+"------------------------------------------------------------------------------
+" See revision and user of current line
+"------------------------------------------------------------------------------
+function! s:GitBlame()
+   exec 'Git blame -L ' . line('.') . ',' . line('.') . ' ' . expand("%")
+endfunction
+
+"------------------------------------------------------------------------------
+" FileBlame
+"------------------------------------------------------------------------------
+" Bring up blame window for either git or svn.
+"------------------------------------------------------------------------------
+function! s:FileBlame() range
+   let revtype = <SID>PathRepoType()
+   let tempfile = <SID>PathTmpFile(expand("%:p")) . ".blame"
+   if (revtype != 'unknown' && has_key(s:commands, revtype)
+      \ && has_key(s:commands[revtype], 'blame'))
+      let lz = &lz
+      set lz
+      let startdir = getcwd()
+      execute "sil! cd " . expand("%:p:h")
+      let lineno = line(".")
+      let cmd=s:commands[revtype]['blame']
+      let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
+      let g:debug += [ "cmd " . cmd ]
+      execute "new " . tempfile
+      sil! %d
+      execute 'sil! r !' . cmd
+      1d
+      update
+      execute lineno
+      execute "sil! cd " . startdir
+      let &lz = lz
+   else
+      echo "Sorry, ALS has no concept of blame."
+   endif
 endfunction
 
 function! TestIt()
