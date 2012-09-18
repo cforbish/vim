@@ -369,7 +369,7 @@ function! s:GitAmmend()
       if (strlen(tl))
          execute "cd " . tl
          let tmpfilename = <SID>PathTmpFile(getcwd()) . "_git_ammend"
-         if (stridx(expand("%"), expand(tmpfilename)))
+         if (stridx(expand("%:p"), expand(tmpfilename)))
             execute "edit " . tmpfilename
             %d
             sil! r !git whatchanged HEAD~1..HEAD
@@ -377,7 +377,7 @@ function! s:GitAmmend()
             sil! %s;^    ;;g
             sil! update
          else
-            execute "!git commit --amend -F " . @%
+            execute "Git commit --amend -F " . expand("%:p")
             execute "bw!"
          endif
       else
