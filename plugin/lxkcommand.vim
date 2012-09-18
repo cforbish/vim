@@ -55,6 +55,7 @@ com! -nargs=+ -complete=file Git call <SID>Cmd("git", <f-args>)
 com! -nargs=+ -complete=file Hg call <SID>Cmd("hg", <f-args>)
 com! -nargs=+ -complete=file Svn call <SID>Cmd("svn", <f-args>)
 com! -nargs=+ -complete=file VF call <SID>VF(<f-args>)
+com! -range -nargs=0 GitAmmend call <SID>GitAmmend()
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -337,6 +338,50 @@ function! s:DiffNext(direction)
          endif
       else
          echo "No diff history present."
+      endif
+   endif
+   let &lz = lz
+endfunction
+
+"------------------------------------------------------------------------------
+" GitAmmend
+"------------------------------------------------------------------------------
+" Ammend to head
+" If not in temporary file, build temporary file with log message from head.
+" While in the temporary file the command will commit the modified message.
+"------------------------------------------------------------------------------
+function! s:GitAmmend()
+   let lz = &lz
+   set lz
+   let tl = ''
+   if (&mod)
+      echo "Current buffer has modifications."
+   else
+      if (isdirectory(".git"))
+         let tl = getcwd()
+      else
+         if (<SID>PathRepoType(expand("%:p")) == "git")
+            let tl = <SID>PathTopLevel(expand("%:p"))
+         else
+            let tl = <SID>PathTopLevel(getcwd())
+         endif
+      endif
+      if (strlen(tl))
+         execute "cd " . tl
+         let tmpfilename = <SID>PathTmpFile(getcwd()) . "_git_ammend"
+         if (stridx(expand("%"), expand(tmpfilename)))
+            execute "edit " . tmpfilename
+            %d
+            sil! r !git whatchanged HEAD~1..HEAD
+            sil! v;^    ;d
+            sil! %s;^    ;;g
+            sil! update
+         else
+            execute "!git commit --amend -F " . @%
+            execute "bw!"
+         endif
+      else
+         echo "Could not determine a top level for current file or current directory"
       endif
    endif
    let &lz = lz
