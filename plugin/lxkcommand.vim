@@ -239,7 +239,7 @@ function! s:PathRepoType(...)
    else
       let filename = expand("%:p")
    endif
-   execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
+   execute 'cd ' . <SID>PathTopLevel(filename)
    let retval = "unknown"
    for key in s:lookorder
       let path=s:lookfor[key]
