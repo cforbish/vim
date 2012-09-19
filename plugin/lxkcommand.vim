@@ -41,6 +41,7 @@ let s:versions['hg']['vim:prev'] = '.^'
 " B - (\db) BASE   Diff just like git diff or svn diff.
 " H - (\dh) HEAD   Will see changes against current HEAD.
 " p - (\dp) PREV   Will see changes against previous revision.
+" Q - (\dq) QUIT   Closes diff session and window to the right.
 "------------------------------------------------------------------------------
 map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'<CR>
 map \db :execute "call <SID>DiffWithRevision(\"vim:base\")"<CR>
@@ -442,18 +443,22 @@ function! s:FileBlame() range
 endfunction
 
 function! s:Vstatus()
-   let revtype = <SID>PathRepoType(getcwd())
-   if (revtype != 'unknown' && has_key(s:commands, revtype)
-      \ && has_key(s:commands[revtype], 'status'))
-      let lz = &lz
-      set lz
-      let tempfile = <SID>PathTmpFile(expand("%:h")) . ".status"
-      execute "edit " . tempfile
-      sil! %d
-      let cmd=s:commands[revtype]['status']
-      execute 'sil! r !' . cmd
-      update
-      let &lz = lz
+   if (&mod)
+      echo "Current buffer has modifications."
+   else
+      let revtype = <SID>PathRepoType(getcwd())
+      if (revtype != 'unknown' && has_key(s:commands, revtype)
+         \ && has_key(s:commands[revtype], 'status'))
+         let lz = &lz
+         set lz
+         let tempfile = <SID>PathTmpFile(expand("%:h")) . ".status"
+         execute "edit " . tempfile
+         sil! %d
+         let cmd=s:commands[revtype]['status']
+         execute 'sil! r !' . cmd
+         update
+         let &lz = lz
+      endif
    endif
 endfunction
 
