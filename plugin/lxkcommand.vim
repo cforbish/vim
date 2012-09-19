@@ -15,6 +15,9 @@ let s:commands['svn']['cat'] = 'svn cat -r <REV> <FILE>'
 let s:commands['git']['blame'] = 'git blame <FILE>'
 let s:commands['hg']['blame'] = 'hg blame <FILE>'
 let s:commands['svn']['blame'] = 'svn blame <FILE>'
+let s:commands['git']['status'] = 'git status'
+let s:commands['hg']['status'] = 'hg status'
+let s:commands['svn']['status'] = 'svn status'
 
 let s:lookorder = [ 'git', 'hg', 'svn' ]
 let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
@@ -67,6 +70,7 @@ com! -nargs=+ -complete=file Svn call <SID>Cmd("svn", <f-args>)
 com! -nargs=+ -complete=file VF call <SID>VF(<f-args>)
 com! -range -nargs=0 GitAmmend call <SID>GitAmmend()
 com! -range -nargs=0 GitBlame call <SID>GitBlame()
+com! -range -nargs=0 Vstatus call <SID>Vstatus()
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -434,6 +438,22 @@ function! s:FileBlame() range
       let &lz = lz
    else
       echo "Sorry, ALS has no concept of blame."
+   endif
+endfunction
+
+function! s:Vstatus()
+   let revtype = <SID>PathRepoType(getcwd())
+   if (revtype != 'unknown' && has_key(s:commands, revtype)
+      \ && has_key(s:commands[revtype], 'status'))
+      let lz = &lz
+      set lz
+      let tempfile = <SID>PathTmpFile(expand("%:h")) . ".status"
+      execute "edit " . tempfile
+      sil! %d
+      let cmd=s:commands[revtype]['status']
+      execute 'sil! r !' . cmd
+      update
+      let &lz = lz
    endif
 endfunction
 
