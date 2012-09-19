@@ -414,17 +414,16 @@ endfunction
 "------------------------------------------------------------------------------
 function! s:FileBlame() range
    let revtype = <SID>PathRepoType()
-   let tempfile = <SID>PathTmpFile(expand("%:p")) . ".blame"
    if (revtype != 'unknown' && has_key(s:commands, revtype)
       \ && has_key(s:commands[revtype], 'blame'))
       let lz = &lz
       set lz
+      let tempfile = <SID>PathTmpFile(expand("%:p")) . ".blame"
       let startdir = getcwd()
       execute "sil! cd " . expand("%:p:h")
       let lineno = line(".")
       let cmd=s:commands[revtype]['blame']
       let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
-      let g:debug += [ "cmd " . cmd ]
       execute "new " . tempfile
       sil! %d
       execute 'sil! r !' . cmd
