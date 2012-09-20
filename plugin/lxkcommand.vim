@@ -44,6 +44,9 @@ let s:versions['hg']['vim:prev'] = '.^'
 " B - (\db) BASE   Diff just like git diff or svn diff.
 " H - (\dh) HEAD   Will see changes against current HEAD.
 " p - (\dp) PREV   Will see changes against previous revision.
+" O - (\do) ORIG   Does a diff with current file and a .orig.
+" F - (\df) FILE   Prompts for a file to diff current file against.
+" # - (\d#) LAST   Does a diff with current file and last file.
 " Q - (\dq) QUIT   Closes diff session and window to the right.
 "------------------------------------------------------------------------------
 map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'<CR>
@@ -51,6 +54,9 @@ map \db :execute "call <SID>DiffWithRevision(\"vim:base\")"<CR>
 map \dh :execute "call <SID>DiffWithRevision(\"vim:head\")"<CR>
 map \dp :execute "call <SID>DiffWithRevision(\"vim:prev\")"<CR>
 map \dq :execute "call <SID>DiffQuit()"<CR>
+map \do :call <SID>DiffWithFile('%.orig')<CR>
+map \df :call <SID>DiffWithFile(input('Enter filename: ', '', 'file'))<CR>
+map \d# :call <SID>DiffWithFile('#')<CR>
 let s:diffinfo = ""
 nmap <silent> <C-S-Right> :sil! call <SID>DiffNext('next')<CR>
 nmap <silent> <C-S-Left> :sil! call <SID>DiffNext('prev')<CR>
@@ -355,6 +361,8 @@ function! s:DiffNext(direction)
       if (strlen(strpart(s:diffinfo, 2)) && (strpart(s:diffinfo, 0, 3) != 'f:#'))
          if (!match(s:diffinfo, 'w:'))
             call <SID>DiffWithRevision(strpart(s:diffinfo, 2))
+         elseif (!match(s:diffinfo, 'f:'))
+            call DiffWithFile(strpart(s:diffinfo, 2))
          endif
       else
          echo "No diff history present."
@@ -481,6 +489,22 @@ function! s:Vrevert()
          let &lz = lz
       endif
    endif
+endfunction
+
+"------------------------------------------------------------------------------
+" DiffWithFile
+"------------------------------------------------------------------------------
+" Diff with another file (a:filename is the other file).
+"------------------------------------------------------------------------------
+function! s:DiffWithFile(filename)
+   let lz = &lz
+   set lz
+   let s:diffinfo = 'f:' . a:filename
+   normal gg0
+   execute "sil! vert diffsplit " . AdjustPath(a:filename)
+   normal hgglgg
+   sil! redraw!
+   let &lz = lz
 endfunction
 
 function! TestIt()
