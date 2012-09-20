@@ -467,15 +467,19 @@ function! s:Vstatus()
 endfunction
 
 function! s:Vrevert()
-   let revtype = <SID>PathRepoType(getcwd())
-   if (revtype != 'unknown' && has_key(s:commands, revtype)
-      \ && has_key(s:commands[revtype], 'revert'))
-      let lz = &lz
-      set lz
-      let cmd=s:commands[revtype]['revert']
-      let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
-      echo system(cmd)
-      let &lz = lz
+   let resp = input("Wipe out local changes to current file (yes/no): ")
+   let resp = tr(resp, 'NOYES', 'noyes')
+   if (match(resp, '\c^y') >= 0)
+      let revtype = <SID>PathRepoType(getcwd())
+      if (revtype != 'unknown' && has_key(s:commands, revtype)
+         \ && has_key(s:commands[revtype], 'revert'))
+         let lz = &lz
+         set lz
+         let cmd=s:commands[revtype]['revert']
+         let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
+         echo system(cmd)
+         let &lz = lz
+      endif
    endif
 endfunction
 
