@@ -18,6 +18,9 @@ let s:commands['svn']['blame'] = 'svn blame <FILE>'
 let s:commands['git']['status'] = 'git status'
 let s:commands['hg']['status'] = 'hg status'
 let s:commands['svn']['status'] = 'svn status'
+let s:commands['git']['revert'] = 'git checkout HEAD <FILE>'
+let s:commands['hg']['revert'] = 'hg revert <FILE>'
+let s:commands['svn']['revert'] = 'svn revert <FILE>'
 
 let s:lookorder = [ 'git', 'hg', 'svn' ]
 let s:lookfor = { 'git':'.git', 'hg':'.hg', 'svn':'.svn' }
@@ -72,6 +75,7 @@ com! -nargs=+ -complete=file VF call <SID>VF(<f-args>)
 com! -range -nargs=0 GitAmmend call <SID>GitAmmend()
 com! -range -nargs=0 GitBlame call <SID>GitBlame()
 com! -range -nargs=0 Vstatus call <SID>Vstatus()
+com! -range -nargs=0 Vrevert call <SID>Vrevert()
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -459,6 +463,19 @@ function! s:Vstatus()
          update
          let &lz = lz
       endif
+   endif
+endfunction
+
+function! s:Vrevert()
+   let revtype = <SID>PathRepoType(getcwd())
+   if (revtype != 'unknown' && has_key(s:commands, revtype)
+      \ && has_key(s:commands[revtype], 'revert'))
+      let lz = &lz
+      set lz
+      let cmd=s:commands[revtype]['revert']
+      let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
+      echo system(cmd)
+      let &lz = lz
    endif
 endfunction
 
