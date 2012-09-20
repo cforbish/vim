@@ -120,16 +120,16 @@ endfunction
 " Convert paths to linux paths before calling command.
 "------------------------------------------------------------------------------
 function! s:Cmd(...)
-   let l:command = AdjustPath(a:000[0])
-   let l:args = a:000[1:]
-   for l:arg in l:args
-      if (match(l:arg, '\') >= 0)
-         let l:command = l:command . ' ' . AdjustPath(l:arg)
+   let command = AdjustPath(a:000[0])
+   let args = a:000[1:]
+   for arg in args
+      if (match(arg, '\') >= 0)
+         let command = command . ' ' . AdjustPath(arg)
       else
-         let l:command = l:command . ' ' . l:arg
+         let command = command . ' ' . arg
       endif
    endfor
-   echo system(l:command)
+   echo system(command)
 endfunction
 
 "------------------------------------------------------------------------------
