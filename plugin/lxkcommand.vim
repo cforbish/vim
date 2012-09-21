@@ -249,20 +249,23 @@ endfunction
 "------------------------------------------------------------------------------
 function! s:PathRepoType(...)
    let startdir = getcwd()
+   let retval = "unknown"
    if a:0 > 0
       let filename = a:1
    else
       let filename = expand("%:p")
    endif
-   execute 'cd ' . <SID>PathTopLevel(filename)
-   let retval = "unknown"
-   for key in s:lookorder
-      let path=s:lookfor[key]
-      if (isdirectory(path))
-         let retval = key
-         break
-      endif
-   endfor
+   let tl = <SID>PathTopLevel(filename)
+   if (strlen(tl))
+      execute 'cd ' . tl
+      for key in s:lookorder
+         let path=s:lookfor[key]
+         if (isdirectory(path))
+            let retval = key
+            break
+         endif
+      endfor
+   endif
    execute "cd " . startdir
    return retval
 endfunction
@@ -290,19 +293,24 @@ function! s:DiffWithRevision(revname)
    let olddir = <SID>OldPwd()
    let startdir = getcwd()
    let s:diffinfo = 'w:' . a:revname
-   execute 'cd ' . <SID>PathTopLevel(expand("%:p"))
-   let revtype = <SID>PathRepoType(expand("%:h"))
-   if revtype != "unknown"
-      let cmd=s:commands[revtype]['cat']
-      let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
-      let revname = a:revname
-      if (has_key(s:versions, revtype) && has_key(s:versions[revtype], a:revname))
-         let revname = s:versions[revtype][a:revname]
+   let tl = <SID>PathTopLevel(expand("%:p"))
+   if (strlen(tl))
+      execute 'cd ' . tl
+      let revtype = <SID>PathRepoType(expand("%:h"))
+      if revtype != "unknown"
+         let cmd=s:commands[revtype]['cat']
+         let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
+         let revname = a:revname
+         if (has_key(s:versions, revtype) && has_key(s:versions[revtype], a:revname))
+            let revname = s:versions[revtype][a:revname]
+         endif
+         let cmd=substitute(cmd, '<REV>', revname, 'g')
+         let tmpfile=<SID>PathTmpFile(expand("%:p"))
+         call <SID>BuildFileFromSystemCmd(tmpfile, cmd)
+         execute "sil! vert diffsplit " . tmpfile
       endif
-      let cmd=substitute(cmd, '<REV>', revname, 'g')
-      let tmpfile=<SID>PathTmpFile(expand("%:p"))
-      call <SID>BuildFileFromSystemCmd(tmpfile, cmd)
-      execute "sil! vert diffsplit " . tmpfile
+   else
+      echo "Could not determine toplevel directory."
    endif
    execute "cd " . olddir
    execute "cd " . startdir
