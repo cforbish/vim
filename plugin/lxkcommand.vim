@@ -199,7 +199,11 @@ endfunction
 function! s:PathTopLevel(...)
    let startdir = getcwd()
    if a:0 > 0
-      let pathname = substitute(a:1, '^\(.*\)\' . s:os_slash . '.*', '\1', "g")
+      if (isdirectory(a:1))
+         let pathname = a:1
+      else
+         let pathname = substitute(a:1, '^\(.*\)\' . s:os_slash . '.*', '\1', "g")
+      endif
    else
       let pathname = getcwd()
    endif
@@ -484,17 +488,22 @@ endfunction
 
 function! s:Vrevert()
    let revtype = <SID>PathRepoType(expand("%:p"))
-   if (revtype != 'unknown' && has_key(s:commands, revtype)
-      \ && has_key(s:commands[revtype], 'revert'))
-      let resp = input("Wipe out local changes to current file (yes/no): ")
-      let resp = tr(resp, 'NOYES', 'noyes')
-      if (match(resp, '\c^y') >= 0)
-         let lz = &lz
-         set lz
-         let cmd=s:commands[revtype]['revert']
-         let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
-         echo system(cmd)
-         let &lz = lz
+   if (revtype == 'unknown')
+      echo 'Could not determine repository type of current file.'
+   else
+      if (has_key(s:commands, revtype) && has_key(s:commands[revtype], 'revert'))
+         let resp = input("Wipe out local changes to current file (yes/no): ")
+         let resp = tr(resp, 'NOYES', 'noyes')
+         if (match(resp, '\c^y') >= 0)
+            let lz = &lz
+            set lz
+            let cmd=s:commands[revtype]['revert']
+            let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
+            echo system(cmd)
+            let &lz = lz
+         endif
+      else
+         echo 'This should not happen, if it does modify.'
       endif
    endif
 endfunction
