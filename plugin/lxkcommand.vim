@@ -8,6 +8,53 @@ if (v:version < 600)
    finish
 endif
 
+"------------------------------------------------------------------------------
+" Diff Mappings: (ALS/SVN/GIT/HG)
+"------------------------------------------------------------------------------
+" W - (\dw) WITH   Diff current file with some other revision of the same file.
+" B - (\db) BASE   Diff just like git diff or svn diff.
+" H - (\dh) HEAD   Will see changes against current HEAD.
+" p - (\dp) PREV   Will see changes against previous revision.
+" O - (\do) ORIG   Does a diff with current file and a .orig.
+" F - (\df) FILE   Prompts for a file to diff current file against.
+" # - (\d#) LAST   Does a diff with current file and last file.
+" Q - (\dq) QUIT   Closes diff session and window to the right.
+"------------------------------------------------------------------------------
+map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'<CR>
+map \db :execute "call <SID>DiffWithRevision(\"vim:base\")"<CR>
+map \dh :execute "call <SID>DiffWithRevision(\"vim:head\")"<CR>
+map \dp :execute "call <SID>DiffWithRevision(\"vim:prev\")"<CR>
+map \dq :execute "call <SID>DiffQuit()"<CR>
+map \do :call <SID>DiffWithFile('%.orig')<CR>
+map \df :call <SID>DiffWithFile(input('Enter filename: ', '', 'file'))<CR>
+map \d# :call <SID>DiffWithFile('#')<CR>
+nmap <silent> <C-S-Right> :sil! call <SID>DiffNext('next')<CR>
+nmap <silent> <C-S-Left> :sil! call <SID>DiffNext('prev')<CR>
+nmap <silent> <C-S-Up> :sil! call <SID>DiffNext('curr')<CR>
+nmap <silent> <C-S-Down> :sil! call <SID>DiffQuit()<CR>
+
+"------------------------------------------------------------------------------
+" File Mappings:
+"------------------------------------------------------------------------------
+" \fb - does a blame for current file in separate window.
+"------------------------------------------------------------------------------
+map \fb :call <SID>FileBlame()<CR>
+
+"------------------------------------------------------------------------------
+" Commands:
+"------------------------------------------------------------------------------
+com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-args>)
+com! -nargs=+ -complete=file Git call <SID>Cmd("git", <f-args>)
+com! -nargs=+ -complete=file Hg call <SID>Cmd("hg", <f-args>)
+com! -nargs=+ -complete=file Svn call <SID>Cmd("svn", <f-args>)
+com! -nargs=+ -complete=file VF call <SID>VF(<f-args>)
+com! -range -nargs=0 GitAmmend call <SID>GitAmmend()
+com! -range -nargs=0 GitBlame call <SID>GitBlame()
+com! -range -nargs=0 Vstatus call <SID>Vstatus()
+com! -range -nargs=0 Vrevert call <SID>Vrevert()
+
+let s:diffinfo = ""
+
 let s:commands = { 'git':{}, 'svn':{}, 'hg':{} }
 let s:commands['git']['cat'] = 'git show <REV>:<FILE>'
 let s:commands['hg']['cat'] = 'hg cat -r <REV> <FILE>'
@@ -36,52 +83,6 @@ let s:versions['svn']['vim:prev'] = 'PREV'
 let s:versions['hg']['vim:base'] = '.'
 let s:versions['hg']['vim:head'] = '.'
 let s:versions['hg']['vim:prev'] = '.^'
-
-"------------------------------------------------------------------------------
-" Diff Mappings: (ALS/SVN/GIT/HG)
-"------------------------------------------------------------------------------
-" W - (\dw) WITH   Diff current file with some other revision of the same file.
-" B - (\db) BASE   Diff just like git diff or svn diff.
-" H - (\dh) HEAD   Will see changes against current HEAD.
-" p - (\dp) PREV   Will see changes against previous revision.
-" O - (\do) ORIG   Does a diff with current file and a .orig.
-" F - (\df) FILE   Prompts for a file to diff current file against.
-" # - (\d#) LAST   Does a diff with current file and last file.
-" Q - (\dq) QUIT   Closes diff session and window to the right.
-"------------------------------------------------------------------------------
-map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'<CR>
-map \db :execute "call <SID>DiffWithRevision(\"vim:base\")"<CR>
-map \dh :execute "call <SID>DiffWithRevision(\"vim:head\")"<CR>
-map \dp :execute "call <SID>DiffWithRevision(\"vim:prev\")"<CR>
-map \dq :execute "call <SID>DiffQuit()"<CR>
-map \do :call <SID>DiffWithFile('%.orig')<CR>
-map \df :call <SID>DiffWithFile(input('Enter filename: ', '', 'file'))<CR>
-map \d# :call <SID>DiffWithFile('#')<CR>
-let s:diffinfo = ""
-nmap <silent> <C-S-Right> :sil! call <SID>DiffNext('next')<CR>
-nmap <silent> <C-S-Left> :sil! call <SID>DiffNext('prev')<CR>
-nmap <silent> <C-S-Up> :sil! call <SID>DiffNext('curr')<CR>
-nmap <silent> <C-S-Down> :sil! call <SID>DiffQuit()<CR>
-
-"------------------------------------------------------------------------------
-" File Mappings:
-"------------------------------------------------------------------------------
-" \fb - does a blame for current file in separate window.
-"------------------------------------------------------------------------------
-map \fb :call <SID>FileBlame()<CR>
-
-"------------------------------------------------------------------------------
-" Commands:
-"------------------------------------------------------------------------------
-com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-args>)
-com! -nargs=+ -complete=file Git call <SID>Cmd("git", <f-args>)
-com! -nargs=+ -complete=file Hg call <SID>Cmd("hg", <f-args>)
-com! -nargs=+ -complete=file Svn call <SID>Cmd("svn", <f-args>)
-com! -nargs=+ -complete=file VF call <SID>VF(<f-args>)
-com! -range -nargs=0 GitAmmend call <SID>GitAmmend()
-com! -range -nargs=0 GitBlame call <SID>GitBlame()
-com! -range -nargs=0 Vstatus call <SID>Vstatus()
-com! -range -nargs=0 Vrevert call <SID>Vrevert()
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
