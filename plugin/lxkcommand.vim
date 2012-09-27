@@ -168,16 +168,20 @@ endfunction
 function! s:BuildFileFromSystemCmd(file, command)
    execute "new " . a:file
    %d
-   let shell = &shell
-   let shellcmdflag = &shellcmdflag
-   let shellxquote = &shellxquote
-   set shell=C:/cygwin/bin/bash
-   set shellcmdflag=-c
-   set shellxquote=\"
+   if (match(getcwd(), '/'))
+      let shell = &shell
+      let shellcmdflag = &shellcmdflag
+      let shellxquote = &shellxquote
+      set shell=C:/cygwin/bin/bash
+      set shellcmdflag=-c
+      set shellxquote=\"
+   endif
    sil! execute "r !" . a:command
-   let &shellxquote = shellxquote
-   let &shellcmdflag = shellcmdflag
-   let &shell = shell
+   if (match(getcwd(), '/'))
+      let &shellxquote = shellxquote
+      let &shellcmdflag = shellcmdflag
+      let &shell = shell
+   endif
    normal ggdd
    update | close
 endfunction
@@ -281,7 +285,9 @@ endfunction
 "------------------------------------------------------------------------------
 function! s:OldPwd()
    let startdir = getcwd()
-   cd -
+   try
+      sil! cd -
+   endtry
    let retval = getcwd()
    execute "cd " . startdir
    return retval
