@@ -44,6 +44,7 @@ map \fb :call <SID>FileBlame()<CR>
 " Commands:
 "------------------------------------------------------------------------------
 com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-args>)
+com! -nargs=+ -complete=file Cmd call <SID>Cmd(<f-args>)
 com! -nargs=+ -complete=file Git call <SID>Cmd("git", <f-args>)
 com! -nargs=+ -complete=file Hg call <SID>Cmd("hg", <f-args>)
 com! -nargs=+ -complete=file Svn call <SID>Cmd("svn", <f-args>)
