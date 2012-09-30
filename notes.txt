@@ -17,6 +17,11 @@ t C:\cygwin\home\cforbish\vimtmp
 r DiffWithRevision
 b BuildFileFromSystemCmd
 
+" C - (\dc) CORE   Gets latest file from svn and does a diff.
+" L - (\dl) LINE   Does a diff of a revision in which current line changed.
+" U - (\du) URL    Prompts for a svn path to diff against.
+" R - (\dr) REV    Diff changes of one revision (works with Versions function).
+
 git show clean_v1:plugin/lxkcommand.vim > ~/vimtmp/orig.vim
 git show origin/master:plugin/lxkcommand.vim > ~/vimtmp/master.vim
 
