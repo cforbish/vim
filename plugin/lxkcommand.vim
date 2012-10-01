@@ -127,20 +127,37 @@ function! AdjustPath(path)
 endfunction
 
 "------------------------------------------------------------------------------
+" BuildCmd
+"------------------------------------------------------------------------------
+" Build a command with file paths adjusted for cygwin potentially running.
+"------------------------------------------------------------------------------
+function! s:BuildCmd(...)
+   if (type(a:000[0]) == 3)
+      let args = a:000[0]
+   else
+      let args = a:000
+   endif
+   let rc = AdjustPath(args[0])
+   let args = args[1:]
+   for arg in args
+      if (match(arg, '\') >= 0)
+         let rc = rc . ' ' . AdjustPath(arg)
+      elseif (match(arg, '%') >= 0)
+         let rc = rc . ' ' . substitute(arg, '%', AdjustPath(expand("%")), 'g')
+      else
+         let rc = rc . ' ' . arg
+      endif
+   endfor
+   return rc
+endfunction
+
+"------------------------------------------------------------------------------
 " Cmd
 "------------------------------------------------------------------------------
 " Convert paths to linux paths before calling command.
 "------------------------------------------------------------------------------
 function! s:Cmd(...)
-   let command = AdjustPath(a:000[0])
-   let args = a:000[1:]
-   for arg in args
-      if (match(arg, '\') >= 0)
-         let command = command . ' ' . AdjustPath(arg)
-      else
-         let command = command . ' ' . arg
-      endif
-   endfor
+   let command=<SID>BuildCmd(a:000)
    echo system(command)
 endfunction
 
@@ -310,13 +327,17 @@ function! s:DiffWithRevision(revname)
       execute 'cd ' . tl
       let revtype = <SID>PathRepoType(expand("%:h"))
       if revtype != "unknown"
-         let cmd=s:commands[revtype]['cat']
-         let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
-         let revname = a:revname
-         if (has_key(s:versions, revtype) && has_key(s:versions[revtype], a:revname))
-            let revname = s:versions[revtype][a:revname]
+         if (match(a:revname, '!'))
+            let cmd=s:commands[revtype]['cat']
+            let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
+            let revname = a:revname
+            if (has_key(s:versions, revtype) && has_key(s:versions[revtype], a:revname))
+               let revname = s:versions[revtype][a:revname]
+            endif
+            let cmd=substitute(cmd, '<REV>', revname, 'g')
+         else
+            let cmd=<SID>BuildCmd(split(strpart(a:revname, 1)))
          endif
-         let cmd=substitute(cmd, '<REV>', revname, 'g')
          let tmpfile=<SID>PathTmpFile(expand("%:p"))
          call <SID>BuildFileFromSystemCmd(tmpfile, cmd)
          execute "sil! vert diffsplit " . tmpfile
