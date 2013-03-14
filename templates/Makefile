@@ -31,6 +31,12 @@ OBJECTS   :=
 LIBRARIES :=
 TARGETS   :=
 LOADLIBS  :=
+ifneq ($(ENV_NUMERIC_DEFINE),)
+DEFINES += -DENV_NUMERIC_DEFINE='$(ENV_NUMERIC_DEFINE)'
+endif
+ifneq ($(ENV_STRING_DEFINE),)
+DEFINES += -DENV_STRING_DEFINE='"$(ENV_STRING_DEFINE)"'
+endif
 
 #-------------------------------------------------------------------------------
 # util
@@ -72,22 +78,30 @@ HELPER_SOURCES += helper2.cpp
 #-------------------------------------------------------------------------------
 
 main := main
-main_HELP := Entry point
-$(main)_SOURCES := main.c
-# $(main)_SOURCES += $(HELPER_SOURCES)
+main_HELP := Entry point.
+$(main)_SOURCES :=
+$(main)_SOURCES += main.c
+$(main)_SOURCES += $(HELPER_SOURCES)
 $(main)_OBJECTS := $(addsuffix .o, $(basename $($(main)_SOURCES)))
-$(main)_PREREQS := $(addsuffix .d, $(basename $($(main)_SOURCES)))
+$(main)_PREREQS := $(addsuffix .d, $(basename $($(main)_OBJECTS)))
+$(main)_INCLUDE :=
+$(main)_INCLUDE += -I.
 $(main)_LOADLIBS :=
+$(main)_LOADLIBS += $(LOADLIBS)
 
-# $($(main)_OBJECTS) : INCLUDE += -I.
+$($(main)_OBJECTS) : INCLUDE := $($(main)_INCLUDE)
+# $($(main)_OBJECTS) : DEFINES += ...
 $(main) : $($(main)_OBJECTS)
 
+SOURCES += $($(main)_SOURCES)
 PREREQS += $($(main)_PREREQS)
 OBJECTS += $($(main)_OBJECTS)
 TARGETS += $(main)
 
-main: $($(main)_PREREQS) $($(main)_SOURCES) $($(main)_OBJECTS) $(LIBRARIES)
-	$(CXX) -o $@ $($(main)_OBJECTS) $($(main)_LOADLIBS) $(LOADLIBS)
+main: $($(main)_PREREQS) $($(main)_SOURCES) $($(main)_OBJECTS)
+	$(CXX) -o $@ $($(main)_OBJECTS) $($(main)_LOADLIBS)
+
+$($(main)_PREREQS) : INCLUDE := $($(main)_INCLUDE)
 
 -include $($(main)_PREREQS)
 
@@ -96,16 +110,16 @@ main: $($(main)_PREREQS) $($(main)_SOURCES) $($(main)_OBJECTS) $(LIBRARIES)
 #-------------------------------------------------------------------------------
 
 %.d: %.c
-	$(CC) $(CCFLAGS) $(INCLUDE) -M $< > $@
+	$(CC) -M $(INCLUDE) $< > $@
 
 %.d: %.cpp
-	$(CXX) $(CCFLAGS) $(INCLUDE) -M $< > $@
+	$(CXX) -M $(INCLUDE) $< > $@
 
 %.o: %.c
-	$(CC) $(CCFLAGS) $(INCLUDE) -c  $(addsuffix .c, $(basename $@))
+	$(CC) $(CCFLAGS) $(DEFINES) $(INCLUDE) -c  $(addsuffix .c, $(basename $@))
 
 %.o: %.cpp
-	$(CXX) $(CCFLAGS) $(INCLUDE) -c $(addsuffix .cpp, $(basename $@))
+	$(CXX) $(CCFLAGS) $(DEFINES) $(INCLUDE) -c $(addsuffix .cpp, $(basename $@))
 
 .PHONY: all
 all: $(TARGETS)
