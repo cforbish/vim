@@ -55,6 +55,7 @@ com! -range -nargs=0 Vstatus call <SID>Vstatus()
 com! -range -nargs=0 Vrevert call <SID>Vrevert()
 
 let s:diffinfo = ""
+let s:diffwidth = 0
 
 let s:commands = { 'git':{}, 'svn':{}, 'hg':{} }
 let s:commands['git']['cat'] = 'git show <REV>:<FILE>'
@@ -327,6 +328,7 @@ function! s:DiffWithRevision(revname)
       execute 'cd ' . tl
       let revtype = <SID>PathRepoType(expand("%:h"))
       if revtype != "unknown"
+         let s:diffwidth=winwidth(0)
          if (match(a:revname, '!'))
             let cmd=s:commands[revtype]['cat']
             let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
@@ -367,6 +369,11 @@ function! s:DiffQuit()
          sil! bw
          sil! bd
          sil! e #
+      endif
+      " Attempt to restore old window width
+      if s:diffwidth > 0
+         exec 'set columns=' . s:diffwidth
+         let s:diffwidth = 0
       endif
    endif
    let &lz = lz
@@ -545,6 +552,7 @@ endfunction
 function! s:DiffWithFile(filename)
    let lz = &lz
    set lz
+   let s:diffwidth=columns()
    let s:diffinfo = 'f:' . a:filename
    normal gg0
    execute "sil! vert diffsplit " . AdjustPath(a:filename)
