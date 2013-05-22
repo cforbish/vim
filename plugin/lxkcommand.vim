@@ -17,6 +17,7 @@ endif
 " p - (\dp) PREV   Will see changes against previous revision.
 " O - (\do) ORIG   Does a diff with current file and a .orig.
 " F - (\df) FILE   Prompts for a file to diff current file against.
+" R - (\dr) REV    Diff changes of one revision.
 " # - (\d#) LAST   Does a diff with current file and last file.
 " Q - (\dq) QUIT   Closes diff session and window to the right.
 "------------------------------------------------------------------------------
