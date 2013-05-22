@@ -511,7 +511,7 @@ function! s:Vstatus()
          \ && has_key(s:commands[revtype], 'status'))
          let lz = &lz
          set lz
-         let tempfile = <SID>PathTmpFile(expand("%:h")) . ".status"
+         let tempfile = <SID>PathTmpFile(getcwd()) . ".status"
          execute "edit " . tempfile
          sil! %d
          let cmd=s:commands[revtype]['status']
