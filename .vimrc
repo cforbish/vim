@@ -37,6 +37,9 @@ if (match(getcwd(), '/'))
    set includeexpr=AdjustPath(v:fname)
 endif
 
+if (filereadable(expand("$HOME/vim/bundle/vim-fugitive/plugin/fugitive.vim")))
+   source $HOME/vim/bundle/vim-fugitive/plugin/fugitive.vim
+endif
 source $HOME/vim/settings.vim
 source $HOME/vim/mappings.vim
 source $HOME/vim/commands.vim
