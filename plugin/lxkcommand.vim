@@ -20,10 +20,11 @@ endif
 " # - (\d#) LAST   Does a diff with current file and last file.
 " Q - (\dq) QUIT   Closes diff session and window to the right.
 "------------------------------------------------------------------------------
-map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '")'<CR>
-map \db :execute "call <SID>DiffWithRevision(\"vim:base\")"<CR>
-map \dh :execute "call <SID>DiffWithRevision(\"vim:head\")"<CR>
-map \dp :execute "call <SID>DiffWithRevision(\"vim:prev\")"<CR>
+map \dw :execute 'sil! call <SID>DiffWithRevision("' . input("Enter other revision: ") . '", "w:")'<CR>
+map \db :execute "call <SID>DiffWithRevision(\"vim:base\", 'w:')"<CR>
+map \dh :execute "call <SID>DiffWithRevision(\"vim:head\", 'w:')"<CR>
+map \dp :execute "call <SID>DiffWithRevision(\"vim:prev\", 'w:')"<CR>
+map \dr :execute 'sil! call <SID>DiffWithRevision("' . input("Enter revision to diff: ") . '", "r:")'<CR>
 map \dq :execute "call <SID>DiffQuit()"<CR>
 map \do :call <SID>DiffWithFile('%.orig')<CR>
 map \df :call <SID>DiffWithFile(input('Enter filename: ', '', 'file'))<CR>
@@ -43,7 +44,7 @@ map \fb :call <SID>FileBlame()<CR>
 "------------------------------------------------------------------------------
 " Commands:
 "------------------------------------------------------------------------------
-com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-args>)
+com! -nargs=1 -complete=shellcmd DiffWithRevision call <SID>DiffWithRevision(<q-args>, 'w:')
 com! -nargs=+ -complete=file Cmd call <SID>Cmd(<f-args>)
 com! -nargs=+ -complete=file Git call <SID>Cmd("git", <f-args>)
 com! -nargs=+ -complete=file Hg call <SID>Cmd("hg", <f-args>)
@@ -85,6 +86,8 @@ let s:versions['svn']['vim:prev'] = 'PREV'
 let s:versions['hg']['vim:base'] = '.'
 let s:versions['hg']['vim:head'] = '.'
 let s:versions['hg']['vim:prev'] = '.^'
+
+let s:previous = { 'git':{'printf':'%s~'}, 'svn':{'eval':'%s-1'}, 'hg':{'printf':'%s^'} }
 
 "------------------------------------------------------------------------------
 " Setup variable to represent slash to use for path names for current OS.
@@ -312,36 +315,64 @@ function! s:OldPwd()
 endfunction
 
 "------------------------------------------------------------------------------
+" GetPrevious
+"------------------------------------------------------------------------------
+" Find a revision before a revision (tricky because of sha1)
+"------------------------------------------------------------------------------
+function! s:GetPrevious(type, rev)
+    if (has_key(s:previous, a:type))
+        let info=s:previous[a:type]
+        if (has_key(info, 'eval'))
+            return eval(printf(info['eval'], a:rev))
+        elseif (has_key(info, 'printf'))
+            return printf(info['printf'], a:rev)
+        fi
+    endif
+endfunction
+
+"------------------------------------------------------------------------------
 " DiffWithRevision
 "------------------------------------------------------------------------------
 " Get a difference between current file and some version of same
 " file as a:revname using version control system mof current file.
 "------------------------------------------------------------------------------
-function! s:DiffWithRevision(revname)
+function! s:DiffWithRevision(revname, type)
    let lz = &lz
    set lz
    let olddir = <SID>OldPwd()
    let startdir = getcwd()
-   let s:diffinfo = 'w:' . a:revname
+   let s:diffinfo = a:type . a:revname
    let tl = <SID>PathTopLevel(expand("%:p"))
+   let prefix = ''
+   if a:type == 'r:'
+      let prefix = 'aft_'
+   endif
    if (strlen(tl))
       execute 'cd ' . tl
       let revtype = <SID>PathRepoType(expand("%:h"))
       if revtype != "unknown"
          let s:diffwidth=winwidth(0)
          if (match(a:revname, '!'))
-            let cmd=s:commands[revtype]['cat']
-            let cmd=substitute(cmd, '<FILE>', AdjustPath(expand("%")), 'g')
+            let fmt=s:commands[revtype]['cat']
+            let fmt=substitute(fmt, '<FILE>', AdjustPath(expand("%")), 'g')
             let revname = a:revname
             if (has_key(s:versions, revtype) && has_key(s:versions[revtype], a:revname))
                let revname = s:versions[revtype][a:revname]
             endif
-            let cmd=substitute(cmd, '<REV>', revname, 'g')
+            let cmd=substitute(fmt, '<REV>', revname, 'g')
          else
             let cmd=<SID>BuildCmd(split(strpart(a:revname, 1)))
          endif
-         let tmpfile=<SID>PathTmpFile(expand("%:p"))
+         let tmpfile=<SID>PathTmpFile(prefix . expand("%:p"))
          call <SID>BuildFileFromSystemCmd(tmpfile, cmd)
+         if a:type == 'r:'
+            let prefix='bef_'
+            let revname=<SID>GetPrevious(revtype, revname)
+            let cmd=substitute(fmt, '<REV>', revname, 'g')
+            let curfile=<SID>PathTmpFile(prefix . expand("%:p"))
+            call <SID>BuildFileFromSystemCmd(curfile, cmd)
+            exec 'edit ' . curfile
+         endif
          execute "sil! vert diffsplit " . tmpfile
       endif
    else
@@ -408,7 +439,9 @@ function! s:DiffNext(direction)
    if (!end)
       if (strlen(strpart(s:diffinfo, 2)) && (strpart(s:diffinfo, 0, 3) != 'f:#'))
          if (!match(s:diffinfo, 'w:'))
-            call <SID>DiffWithRevision(strpart(s:diffinfo, 2))
+            call <SID>DiffWithRevision(strpart(s:diffinfo, 2), 'w:')
+         elseif (!match(s:diffinfo, 'r:'))
+            call <SID>DiffWithRevision(strpart(s:diffinfo, 2), 'r:')
          elseif (!match(s:diffinfo, 'f:'))
             call DiffWithFile(strpart(s:diffinfo, 2))
          endif
