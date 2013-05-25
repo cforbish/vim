@@ -4,7 +4,7 @@
 " Set colors for vim:
 "***************************************************
 
-if (has("gui_win32"))
+if (has("gui_running"))
    if (&background == "light")
       colorscheme default
    else
