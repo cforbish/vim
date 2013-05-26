@@ -352,7 +352,7 @@ function! s:DiffWithRevision(revname, type)
       execute 'cd ' . tl
       let revtype = <SID>PathRepoType(expand("%:h"))
       if revtype != "unknown"
-         let s:diffwidth=winwidth(0)
+         let s:diffwidth=&columns
          if (match(a:revname, '!'))
             let fmt=s:commands[revtype]['cat']
             let fmt=substitute(fmt, '<FILE>', AdjustPath(expand("%")), 'g')
@@ -586,7 +586,7 @@ endfunction
 function! s:DiffWithFile(filename)
    let lz = &lz
    set lz
-   let s:diffwidth=columns()
+   let s:diffwidth=&columns
    let s:diffinfo = 'f:' . a:filename
    normal gg0
    execute "sil! vert diffsplit " . AdjustPath(a:filename)
