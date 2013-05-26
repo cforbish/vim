@@ -444,7 +444,7 @@ function! s:DiffNext(direction)
          elseif (!match(s:diffinfo, 'r:'))
             call <SID>DiffWithRevision(strpart(s:diffinfo, 2), 'r:')
          elseif (!match(s:diffinfo, 'f:'))
-            call DiffWithFile(strpart(s:diffinfo, 2))
+            call <SID>DiffWithFile(strpart(s:diffinfo, 2))
          endif
       else
          echo "No diff history present."
