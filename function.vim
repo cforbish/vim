@@ -446,3 +446,22 @@ function! WinShell()
     set grepprg=findstr\ /n\ /s
 endfunction
 
+"-------------------------------------------------------------------------------
+" TagsAddClassMethods
+"-------------------------------------------------------------------------------
+" After ctags has generated a tags file, you can call this to add
+" PrintTask::toElement() style tags so ':ta PrintTask::toElement' functions.
+"-------------------------------------------------------------------------------
+function! TagsAddClassMethods()
+    let savelz=&lz
+    set lz
+    sil! %s;^\(\w\+\).*\<\(\w\+\)::\<\1\>.*;&\r\2::&;g
+    1
+    call search('^[^!]')
+    let lines=getline(line('.'), line('$'))
+    normal dG
+    call append(line('$'), sort(lines))
+    sil! update
+    let &lz=savelz
+endfunction
+
