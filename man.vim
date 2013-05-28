@@ -1,4 +1,4 @@
-" vi:set ts=3 sts=3 sw=3 ft=vim et:
+" vi:set sts=4 sw=4 ts=8 ft=vim et:
 "
 let $MANPAGER=""
 command! -nargs=* Man :call <SID>ManSection(<f-args>)
@@ -15,12 +15,14 @@ function! s:ManLaunch(section, symbol)
     vert new
     set modifiable
     if a:section == 0
-        sil! exec 'r! man ' . a:symbol . ' | col -b'
+        sil! exec 'r !/usr/bin/man ' . a:symbol . ' | col -b'
     else
-        sil! exec 'r! man ' . a:section . ' ' . a:symbol . ' | col -b'
+        sil! exec 'r !/usr/bin/man ' . a:section . ' ' . a:symbol . ' | col -b'
     endif
     sil! exec 'file ' . a:symbol . '.' . a:section
     1d
+    " nnoremap <buffer> <c-]> :call <SID>ManWord()<CR>
+    " nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
     set nomodifiable nomodified ft=man
     let &lz=l:savelz
 endfunction
