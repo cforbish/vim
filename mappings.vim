@@ -98,9 +98,17 @@ map _< :call StarToRegs()
 map _+ :call SelectionToRegs()
 map _= :call LabelRegs()
 map _- :call CleanRegs()
-map \/ :call SearchBuild(1)
-map \? :call SearchBuild(0)
 map \v `<V`>
+
+vmap <silent> \/ :call SearchBuild('visual', 'pattern')<CR>
+vmap <silent> \? :call SearchBuild('visual', 'pattern')<CR>
+vmap <silent> \* :call SearchBuild('visual', 'word')<CR>
+vmap <silent> \# :call SearchBuild('visual', 'word')<CR>
+
+nmap <silent> \/ :call SearchBuild('normal', 'pattern')<CR>
+nmap <silent> \? :call SearchBuild('normal', 'pattern')<CR>
+nmap <silent> \* :call SearchBuild('normal', 'word')<CR>
+nmap <silent> \# :call SearchBuild('normal', 'word')<CR>
 
 map \cs :so ~/vim/templates/main.c
 map \c+ :so ~/vim/templates/cplus.cpp

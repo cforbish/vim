@@ -344,31 +344,19 @@ endfunction
 "-------------------------------------------------------------------------------
 " SearchBuild
 "-------------------------------------------------------------------------------
-" Build a search pattern from a file with a pattern per line.
+" Build a search pattern from a file (or visual) with a pattern per line.
 "-------------------------------------------------------------------------------
-function! SearchBuild(asword)
-   if (a:firstline == a:lastline)
-      " since only one line seliected (or no selection)
-      " use entire file as a list of search patterns
-      sil! g;^\s*$;d
-      if (a:asword)
-         sil! g;.*;s;;\\<&\\>;g
-      else
-         sil! g;.*;s;;&;g
-      endif
-      sil! %j
-   else
-      if (a:asword)
-         sil! '<,'>g;^\S.*;s;;\\<&\\>;g
-      else
-         sil! '<,'>g;^\S.*;s;;&;g
-      endif
-      sil! '<,'>j
-      sil! s;\s*$;;g
-   endif
-   sil! s; ;\\|;g
-   sil! let @/=getline('.')
-   sil! undo
+function! SearchBuild(mode, type) range
+    if a:mode == 'visual'
+        let patterns=getline(a:firstline, a:lastline)
+    else
+        let patterns=getline(1, line('$'))
+    endif
+    if a:type == 'word'
+        let @/='\<'.join(patterns, '\>\|\<').'\>'
+    else
+        let @/=join(patterns, '\|')
+    endif
 endfunction
 
 "-------------------------------------------------------------------------------
