@@ -4,10 +4,6 @@
 command! -nargs=* Man :call <SID>ManSection(<f-args>)
 nmap K :call <SID>ManWord()<CR>
 
-function! s:DoTestWin()
-    echo 'type is ' . &ft
-endfunction
-
 function! s:GotoWin(id)
     let rc=0
     let wnum=0
