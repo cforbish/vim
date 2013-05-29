@@ -68,6 +68,6 @@ endfunction
 function! s:ManWord()
     let l:symbol = substitute(expand("<cWORD>"), '(.*', '', '')
     let l:section = substitute(expand("<cWORD>"), '.*(\(.*\))', '\1', '')
-    call <SID>ManSection(l:section, l:symbol)
+    call <SID>ManLaunch(l:section, l:symbol)
 endfunction
 
