@@ -56,6 +56,7 @@ function! s:ManLaunch(section, symbol)
     endif
     sil! exec 'file ' . a:symbol . '.' . a:section
     1d
+    sil! g;^xxx;d
     " nnoremap <buffer> <c-]> :call <SID>ManWord()<CR>
     " nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
     setl nomodifiable nomodified ft=man
