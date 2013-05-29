@@ -20,7 +20,7 @@ function! s:GotoWin(id)
                 break
             endif
         else
-            if &ft == 'man'
+            if &ft == type
                 let rc=winnr()
                 break
             endif
