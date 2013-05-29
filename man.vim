@@ -33,22 +33,17 @@ endfunction
 function! s:ManLaunch(section, symbol)
     let l:savelz=&lz
     set lz
-    let l:savemore=&more
-    set nomore
     let mn=<SID>GotoWin('man')
     setl modifiable
     if mn
         %d
     else
         vert new
-        set nomore
     endif
     if a:section == 0
-        " sil! exec 'r !man -P cat ' . a:symbol . ' | col -b'
-        sil! exec 'r !man ' . a:symbol . ' | col -b'
+        sil! exec 'r !man -P cat ' . a:symbol . ' | col -b'
     else
-        " sil! exec 'r !man -P cat ' . a:section . ' ' . a:symbol . ' | col -b'
-        sil! exec 'r !man ' . a:section . ' ' . a:symbol . ' | col -b'
+        sil! exec 'r !man -P cat ' . a:section . ' ' . a:symbol . ' | col -b'
     endif
     sil! exec 'file ' . a:symbol . '.' . a:section
     1d
@@ -56,7 +51,6 @@ function! s:ManLaunch(section, symbol)
     " nnoremap <buffer> <c-]> :call <SID>ManWord()<CR>
     " nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
     setl nomodifiable nomodified ft=man
-    let &more=l:savemore
     let &lz=l:savelz
 endfunction
 
