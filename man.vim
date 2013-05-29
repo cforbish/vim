@@ -4,6 +4,8 @@
 command! -nargs=* Man :call <SID>ManSection(<f-args>)
 nmap K :call <SID>ManWord()<CR>
 
+let s:pages = []
+
 function! s:GotoWin(id)
     let rc=0
     let wnum=0
@@ -39,6 +41,7 @@ function! s:ManLaunch(section, symbol)
         %d
     else
         vert new
+        let s:pages = []
     endif
     if a:section == 0
         sil! exec 'r !man -P cat ' . a:symbol . ' | col -b'
@@ -48,10 +51,21 @@ function! s:ManLaunch(section, symbol)
     sil! exec 'file ' . a:symbol . '.' . a:section
     sil! 1d
     sil! g;^xxx;d
-    " nnoremap <buffer> <c-]> :call <SID>ManWord()<CR>
-    " nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
+    nnoremap <buffer> <c-]> :call <SID>ManWord()<CR>
+    nnoremap <buffer> <c-t> :call <SID>ManPop()<CR>
     setl nomodifiable nomodified ft=man
     let &lz=l:savelz
+endfunction
+
+function! s:ManPop()
+    if (len(s:pages) > 1)
+        let l:section = s:pages[-2][0]
+        let l:symbol = s:pages[-2][1]
+        let s:pages = s:pages[0:len(s:pages)-2]
+        call <SID>ManLaunch(l:section, l:symbol)
+    else
+        echo 'On first man page.'
+    endif
 endfunction
 
 function! s:ManSection(...)
@@ -63,11 +77,13 @@ function! s:ManSection(...)
         let l:symbol = a:2
     endif
     call <SID>ManLaunch(l:section, l:symbol)
+    let s:pages += [[l:section, l:symbol]]
 endfunction
 
 function! s:ManWord()
     let l:symbol = substitute(expand("<cWORD>"), '(.*', '', '')
     let l:section = substitute(expand("<cWORD>"), '.*(\(.*\))', '\1', '')
     call <SID>ManLaunch(l:section, l:symbol)
+    let s:pages += [[l:section, l:symbol]]
 endfunction
 
