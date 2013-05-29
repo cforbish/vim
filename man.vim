@@ -62,7 +62,7 @@ function! s:ManSection(...)
         let l:section = a:1
         let l:symbol = a:2
     endif
-    call s:ManLaunch(l:section, l:symbol)
+    call <SID>ManLaunch(l:section, l:symbol)
 endfunction
 
 function! s:ManWord()
