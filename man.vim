@@ -33,7 +33,7 @@ endfunction
 function! s:ManLaunch(section, symbol)
     let l:savelz=&lz
     set lz
-    let mn=<SID>GotoWin('man')
+    sil! let mn=<SID>GotoWin('man')
     setl modifiable
     if mn
         %d
@@ -46,7 +46,7 @@ function! s:ManLaunch(section, symbol)
         sil! exec 'r !man -P cat ' . a:section . ' ' . a:symbol . ' | col -b'
     endif
     sil! exec 'file ' . a:symbol . '.' . a:section
-    1d
+    sil! 1d
     sil! g;^xxx;d
     " nnoremap <buffer> <c-]> :call <SID>ManWord()<CR>
     " nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
