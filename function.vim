@@ -465,3 +465,17 @@ function! TagsAddClassMethods()
     let &lz=savelz
 endfunction
 
+"-------------------------------------------------------------------------------
+" ToggleBoolean
+"-------------------------------------------------------------------------------
+" Toggles boolean vim options and displays new value.
+"-------------------------------------------------------------------------------
+function! ToggleBoolean(option)
+    try
+        exec 'set inv' . a:option
+        echo a:option . ' is ' . [ 'off', 'on' ][eval('&'.a:option)]
+    catch
+        echo a:option . ' is not a boolean option that can be toggled.'
+    endtry
+endfunction
+
