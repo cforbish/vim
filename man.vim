@@ -43,11 +43,14 @@ function! s:ManLaunch(section, symbol)
         vert new
         let s:pages = []
     endif
+    let l:savemanwidth=$MANWIDTH
+    let $MANWIDTH = winwidth(0)
     if a:section == 0
         sil! exec 'r !man -P cat ' . a:symbol . ' | col -b'
     else
         sil! exec 'r !man -P cat ' . a:section . ' ' . a:symbol . ' | col -b'
     endif
+    let $MANWIDTH=l:savemanwidth
     sil! exec 'file ' . a:symbol . '.' . a:section
     sil! 1d
     sil! g;^xxx;d
