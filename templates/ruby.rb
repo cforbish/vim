@@ -14,6 +14,7 @@ sil! normal /^" <AUTO_VIM_SCRIPT_TAG 3dd
 sil! 1d
 sil! set ff=unix
 sil! update | edit
+exec '!chmod +x ' . expand('%')
 sil! set nolz
 finish
 " <AUTO_VIM_SCRIPT_TAG 2>
