@@ -28,9 +28,9 @@ CCFLAGS   := -W -Werror -Wall -g
 INCLUDE   :=
 PREREQS   :=
 OBJECTS   :=
-LIBRARIES :=
 TARGETS   :=
 LOADLIBS  :=
+DEFINES   :=
 ifneq ($(ENV_NUMERIC_DEFINE),)
 DEFINES += -DENV_NUMERIC_DEFINE='$(ENV_NUMERIC_DEFINE)'
 endif
@@ -39,39 +39,44 @@ DEFINES += -DENV_STRING_DEFINE='"$(ENV_STRING_DEFINE)"'
 endif
 
 #-------------------------------------------------------------------------------
-# util
-#-------------------------------------------------------------------------------
-
-util := libutil.a
-util_HELP := Helper utilities
-$(util)_SOURCES :=
-$(util)_SOURCES += util1.c
-$(util)_SOURCES += util2.cpp
-$(util)_OBJECTS := $(addsuffix .o, $(basename $($(util)_SOURCES)))
-# $(util)_PREREQS := $(addsuffix .d, $(basename $($(util)_SOURCES)))
-$(util)_LOADLIBS :=
-
-# $($(util)_OBJECTS) : INCLUDE += -I.
-$(util) : $($(util)_OBJECTS)
-
-# PREREQS += $($(util)_PREREQS)
-# OBJECTS += $($(util)_OBJECTS)
-# LIBRARIES += $(util)
-# LOADLIBS += -L. -lutil
-
-libutil.a: $($(util)_PREREQS) $($(util)_SOURCES)
-	$(AR) r $@ $($(util)_OBJECTS)
-	$(RANLIB) $@
-
--include $($(util)_PREREQS)
-
-#-------------------------------------------------------------------------------
 # modules for all
 #-------------------------------------------------------------------------------
 
 HELPER_SOURCES :=
-HELPER_SOURCES += helper1.c
-HELPER_SOURCES += helper2.cpp
+
+LOADLIBS += -lrt -lpthread
+
+# #-------------------------------------------------------------------------------
+# # static library goes here
+# #-------------------------------------------------------------------------------
+# 
+# libstatic := libstatic
+# static_a := $(libstatic).a
+# $(libstatic)_OBJECTS :=
+# $(static_a) : $($(libstatic)_OBJECTS)
+# OBJECTS += $($(libstatic)_OBJECTS)
+# TARGETS += $(static_a)
+# 
+# $(libstatic)_INCLUDE :=
+# $($(libstatic)_OBJECTS) : INCLUDE +=$($(libstatic)_INCLUDE)
+# 
+# LOADLIBS += -L. -lstatic
+
+# #-------------------------------------------------------------------------------
+# # shared library goes here
+# #-------------------------------------------------------------------------------
+# 
+# libshared := libshared
+# shared_so := $(libshared).so
+# $(libshared)_OBJECTS :=
+# $(shared_so) : $($(libshared)_OBJECTS)
+# OBJECTS += $($(libshared)_OBJECTS)
+# TARGETS += $(shared_so)
+# 
+# $(libshared)_INCLUDE :=
+# $($(libshared)_OBJECTS) : INCLUDE +=$($(libshared)_INCLUDE)
+# 
+# LOADLIBS += -ldl -L. -lshared
 
 #-------------------------------------------------------------------------------
 # main
@@ -121,6 +126,14 @@ $($(main)_PREREQS) : INCLUDE := $($(main)_INCLUDE)
 %.o: %.cpp
 	$(CXX) $(CCFLAGS) $(DEFINES) $(INCLUDE) -c $(addsuffix .cpp, $(basename $@))
 
+%.a : $($(*)_OBJECTS)
+	$(RM) $@ ; \
+	$(AR) ru $@ $($(*)_OBJECTS) ; \
+	$(RANLIB) $@
+
+%.so : $($(*)_OBJECTS)
+	$(CC) -shared -o $@ $($(*)_OBJECTS) $($(*)_LIBS)
+
 .PHONY: all
 all: $(TARGETS)
 
@@ -130,7 +143,7 @@ rmobjects:
 
 .PHONY: clean
 clean: rmobjects
-	$(RM) $(TARGETS) $(LIBRARIES)
+	$(RM) $(TARGETS)
 
 .PHONY: reallyclean
 reallyclean: clean
