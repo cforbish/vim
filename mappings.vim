@@ -33,22 +33,22 @@ nmap <F7> :exec append(line('.'), split(system(getline('.')), '[\n\r]\+'))
 " Toggling mappings
 "-------------------------------------------------------------------------------
 "Toggle autoindent
-map \ta :setl invai: set ai ?
+nmap \ta :setl invai: set ai ?
 "Toggle search highlighting.
-map \th :set invhls: set hls ?
+nmap \th :set invhls: set hls ?
 map \h :set invhls: set hls ?
 "Toggle ignorecase
-map \ti :setl invic: set ic ?
+nmap \ti :setl invic: set ic ?
 "Toggle line numbering.
-map \tn :setl invnumber: set number ?
+nmap \tn :setl invnumber: set number ?
 "Toggle paste mode
-map \tp :setl invpaste: set paste ?
+nmap \tp :setl invpaste: set paste ?
 "Toggle spell checking
-map \ts :setl invspell: set spell ?
+nmap \ts :setl invspell: set spell ?
 "Toggle wrap mode
-map \tw :setl invwrap: set wrap ?
+nmap \tw :setl invwrap: set wrap ?
 "Toggle lazyredraw
-map \tz :setl invlz: set lz ?
+nmap \tz :setl invlz: set lz ?
 
 "-------------------------------------------------------------------------------
 " Browser mappings
