@@ -479,3 +479,16 @@ function! ToggleBoolean(option)
     endtry
 endfunction
 
+"-------------------------------------------------------------------------------
+" Ifndef
+"-------------------------------------------------------------------------------
+" Build a ifndef protection block.
+"-------------------------------------------------------------------------------
+function! Ifndef(path)
+    let name=substitute(a:path,'\.','_','g')
+    let name=substitute(name,'.*','_\U&\E_','')
+    call append(line('.'), printf('#endif /* %s */', name))
+    call append(line('.'), printf('#define %s', name))
+    call append(line('.'), printf('#ifndef %s', name))
+endfunction
+
