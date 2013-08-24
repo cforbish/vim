@@ -492,3 +492,18 @@ function! Ifndef(path)
     call append(line('.'), printf('#ifndef %s', name))
 endfunction
 
+"-------------------------------------------------------------------------------
+" ExternC
+"-------------------------------------------------------------------------------
+" Build a extern "C" block.
+"-------------------------------------------------------------------------------
+function! ExternC()
+    call append(line('.'), '#endif')
+    call append(line('.'), '}')
+    call append(line('.'), '#ifdef __cplusplus')
+    call append(line('.'), '')
+    call append(line('.'), '#endif')
+    call append(line('.'), 'extern "C" {')
+    call append(line('.'), '#ifdef __cplusplus')
+endfunction
+

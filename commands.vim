@@ -3,6 +3,7 @@
 com! -range -nargs=+ Replace call Replace(<f-args>)
 com! -nargs=0 SwapRemove call SwapRemove()
 com! -nargs=1 Ifndef call Ifndef(<f-args>)
+com! -nargs=0 ExternC call ExternC()
 com! -nargs=0 Date call Date()
 
 com! -nargs=0 ClassInp source ~/vim/templates/classinp.cpp
