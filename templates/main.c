@@ -20,12 +20,10 @@ finish
 
 #include <stdio.h>
 
-#if COMPILE_ALONE == 1
 int main(int argc, char **argv)
 {
     printf("Hello World.\n");
     return 0;
 }
-#endif
 
 " <AUTO_VIM_SCRIPT_TAG 3>
