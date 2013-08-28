@@ -392,6 +392,7 @@ endfunction
 function! s:DiffQuit()
    let lz = &lz
    set lz
+   let curline = line('.')
    if (&diff)
       " clean up if still diffing
       if (!match(s:diffinfo, 'r:'))
@@ -408,6 +409,7 @@ function! s:DiffQuit()
          let s:diffwidth = 0
       endif
    endif
+   execute curline
    let &lz = lz
 endfunction
 
