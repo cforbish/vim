@@ -53,10 +53,16 @@ nmap \tz :setl invlz: set lz ?
 "-------------------------------------------------------------------------------
 " Browser mappings
 "-------------------------------------------------------------------------------
-nmap \bi :update<CR>:exec '!start c:\progra~2\intern~1\iexplore.exe ' . expand("<cWORD>")<CR>
-nmap \bf :update<CR>:exec '!start C:\progra~2\mozill~1\firefox.exe ' . expand("<cWORD>")<CR>
-nmap \bs :update<CR>:exec '!start C:\progra~2\SeaMonkey\seamonkey.exe ' . expand("<cWORD>")<CR>
-nmap \bc :update<CR>:exec '!start "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" ' . expand("<cWORD>") . ' --start-maximized'<CR>
+if (match(getcwd(), '/'))
+   nmap \bi :update<CR>:exec '!start c:\progra~2\intern~1\iexplore.exe ' . expand("<cWORD>")<CR>
+   nmap \bf :update<CR>:exec '!start C:\progra~2\mozill~1\firefox.exe ' . expand("<cWORD>")<CR>
+   nmap \bs :update<CR>:exec '!start C:\progra~2\SeaMonkey\seamonkey.exe ' . expand("<cWORD>")<CR>
+   nmap \bc :update<CR>:exec '!start "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" ' . expand("<cWORD>") . ' --start-maximized'<CR>
+else
+   nmap \bf :update<CR>:exec '!/cygdrive/c/Program\ Files\ \(x86\)/Mozilla\ Firefox/firefox.exe ' . expand("<cWORD>")<CR>
+   nmap \bs :update<CR>:exec '!/cygdrive/c/Program\ Files\ \(x86\)/SeaMonkey/seamonkey.exe ' . expand("<cWORD>")<CR>
+   nmap \bc :update<CR>:exec '!/cygdrive/c/Program\ Files\ \(x86\)/Google/Chrome/Application/chrome.exe ' . expand("<cWORD>")<CR>
+endif
 
 "-------------------------------------------------------------------------------
 " Control key mappings
