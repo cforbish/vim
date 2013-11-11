@@ -602,3 +602,19 @@ function! TestIt()
    echo join(g:debug, "\n")
 endfunction
 
+"------------------------------------------------------------------------------
+" GitGrep
+"------------------------------------------------------------------------------
+" Issue grep with pattern passed or existing @/
+"------------------------------------------------------------------------------
+function! s:GitGrep(pattern)
+   let save = &grepprg
+   if (len(a:pattern))
+      let @/=a:pattern
+   endif
+   set grepprg=git\ grep\ -n\ $*
+   exec "grep '" . @/ . "'"
+   let &grepprg = save
+endfunction
+command! -nargs=? GitGrep call s:GitGrep(<q-args>)
+
