@@ -188,7 +188,7 @@ endfunction
 " to redirect to a file.
 "------------------------------------------------------------------------------
 function! s:BuildFileFromSystemCmd(file, command)
-   execute "new " . a:file
+   execute "edit " . a:file
    %d
    if (match(getcwd(), '/'))
       let shell = &shell
@@ -198,14 +198,14 @@ function! s:BuildFileFromSystemCmd(file, command)
       set shellcmdflag=-c
       set shellxquote=\"
    endif
-   sil! execute "r !" . a:command
+   execute "sil! r !" . a:command
    if (match(getcwd(), '/'))
       let &shellxquote = shellxquote
       let &shellcmdflag = shellcmdflag
       let &shell = shell
    endif
    normal ggdd
-   update | close
+   update | bw
 endfunction
 
 function! s:VF(...)
