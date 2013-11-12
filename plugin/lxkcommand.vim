@@ -612,8 +612,8 @@ function! s:GitGrep(pattern)
    if (len(a:pattern))
       let @/=a:pattern
    endif
-   set grepprg=git\ grep\ -n\ $*
-   exec "grep '" . @/ . "'"
+   set grepprg=git\ grep\ -n\ "$*"
+   exec 'grep "' . @/ . '"'
    let &grepprg = save
 endfunction
 command! -nargs=? GitGrep call s:GitGrep(<q-args>)
