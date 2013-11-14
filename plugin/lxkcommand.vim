@@ -609,11 +609,21 @@ endfunction
 "------------------------------------------------------------------------------
 function! s:GitGrep(pattern)
    let save = &grepprg
-   if (len(a:pattern))
-      let @/=a:pattern
+   let pattern=a:pattern
+   if (len(pattern))
+      let @/=pattern
+   else
+      let pattern=@/
    endif
    set grepprg=git\ grep\ -n\ "$*"
-   exec 'grep "' . @/ . '"'
+   if (!match(pattern, '^\\C'))
+      let pattern=substitute(pattern, '^\\C', '', '')
+   elseif (!((&smartcase && !match(pattern, '^.*\u.*$') || !&ignorecase)))
+      set grepprg=git\ grep\ -i\ -n\ "$*"
+   endif
+   let command='grep "' . pattern . '"'
+   let command=substitute(command, '\\', '\\\\', 'g')
+   sil! exec command
    let &grepprg = save
 endfunction
 command! -nargs=? GitGrep call s:GitGrep(<q-args>)
