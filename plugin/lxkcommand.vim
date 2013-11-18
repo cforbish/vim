@@ -617,12 +617,16 @@ function! s:GitGrep(pattern)
    endif
    set grepprg=git\ grep\ -n\ "$*"
    if (!match(pattern, '^\\C'))
-      let pattern=substitute(pattern, '^\\C', '', '')
+      let pattern=substitute(pattern, '\m^\\C', '', '')
    elseif (!((&smartcase && !match(pattern, '^.*\u.*$') || !&ignorecase)))
       set grepprg=git\ grep\ -i\ -n\ "$*"
    endif
    let command='grep "' . pattern . '"'
-   let command=substitute(command, '\\', '\\\\', 'g')
+   if (!&magic)
+      let command=substitute(command, '\m\\\([\.\*]\)', '\1', 'g')
+   else
+      let command=substitute(command, '\m\\', '\\\\', 'g')
+   endif
    sil! exec command
    let &grepprg = save
 endfunction
