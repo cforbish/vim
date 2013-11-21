@@ -1,5 +1,7 @@
 " vi:set ts=3 sts=3 sw=3 ft=vim et:
 
+let mapleader="\\"
+
 if (v:version >= 600)
    map _9 :setl ts=79:setl sw=3:setl sts=3:set ts ?
    map _8 :setl ts=8:setl sw=8:setl sts=8:set ts ?
@@ -33,22 +35,22 @@ nmap <F7> :exec append(line('.'), split(system(getline('.')), '[\n\r]\+'))
 " Toggling mappings
 "-------------------------------------------------------------------------------
 "Toggle autoindent
-nmap \ta :setl invai: set ai ?
+noremap <silent> <Leader>ta :set invai ai ?<CR>
 "Toggle search highlighting.
-nmap \th :set invhls: set hls ?
-map \h :set invhls: set hls ?
+noremap <silent> <Leader>th :set invhls hls ?<CR>
+noremap <silent> <Leader>h :set invhls hls ?<CR>
 "Toggle ignorecase
-nmap \ti :setl invic: set ic ?
+noremap <silent> <Leader>ti :set invic ic ?<CR>
 "Toggle line numbering.
-nmap \tn :setl invnumber: set number ?
+noremap <silent> <Leader>tn :set invnumber number ?<CR>
 "Toggle paste mode
-nmap \tp :setl invpaste: set paste ?
+noremap <silent> <Leader>tp :set invpaste paste ?<CR>
 "Toggle spell checking
-nmap \ts :setl invspell: set spell ?
+noremap <silent> <Leader>ts :set invspell spell ?<CR>
 "Toggle wrap mode
-nmap \tw :setl invwrap: set wrap ?
+noremap <silent> <Leader>tw :set invwrap wrap ?<CR>
 "Toggle lazyredraw
-nmap \tz :setl invlz: set lz ?
+noremap <silent> <Leader>tz :set invlz lz ?<CR>
 
 "-------------------------------------------------------------------------------
 " Browser mappings
