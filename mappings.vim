@@ -27,9 +27,10 @@ endif
 "-------------------------------------------------------------------------------
 " Function key mappings
 "-------------------------------------------------------------------------------
-nmap <F5> :let @+=substitute(getline('.'), '^["#] \\|^!', '', '')<CR>
-nmap <F6> :exec '!'.getline('.')
-nmap <F7> :exec append(line('.'), split(system(getline('.')), '[\n\r]\+'))
+nnoremap <silent> <F5> :let @+=substitute(getline('.'), '^["#] \\|^!', '', '')<CR>
+nnoremap <silent> <F6> :exec '!'.getline('.')
+nnoremap <silent> <F7> :exec append(line('.'), split(system(getline('.')), '[\n\r]\+'))
+vnoremap <silent> <F5> "+y
 
 "-------------------------------------------------------------------------------
 " Toggling mappings
