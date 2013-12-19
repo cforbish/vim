@@ -37,6 +37,7 @@ endif
 ifneq ($(ENV_STRING_DEFINE),)
 DEFINES += -DENV_STRING_DEFINE='"$(ENV_STRING_DEFINE)"'
 endif
+PASSWORD ?= $(shell bash -c 'read -s -p "Password: " pwd; echo $$pwd')
 
 #-------------------------------------------------------------------------------
 # modules for all
