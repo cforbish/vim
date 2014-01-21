@@ -374,7 +374,7 @@ function! s:DiffWithRevision(revname, type)
             call <SID>BuildFileFromSystemCmd(curfile, cmd)
             exec 'edit ' . curfile
          endif
-         execute "sil! vert diffsplit " . tmpfile
+         execute "sil! diffsplit " . tmpfile
       endif
    else
       echo "Could not determine toplevel directory."
@@ -399,6 +399,15 @@ function! s:DiffQuit()
          sil! windo bw!
       else
          sil! windo set nodiff fdc=0
+         if (match(&diffopt,'vertical') >= 0)
+            if (!&splitright)
+               wincmd h
+            endif
+         else
+            if (!&splitbelow)
+               wincmd k
+            endif
+         endif
          sil! bw
          sil! bd
          sil! e #
@@ -591,7 +600,7 @@ function! s:DiffWithFile(filename)
    let s:diffwidth=&columns
    let s:diffinfo = 'f:' . a:filename
    normal gg0
-   execute "sil! vert diffsplit " . AdjustPath(a:filename)
+   execute "sil! diffsplit " . AdjustPath(a:filename)
    normal hgglgg
    sil! redraw!
    let &lz = lz
