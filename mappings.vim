@@ -27,6 +27,7 @@ endif
 "-------------------------------------------------------------------------------
 " Function key mappings
 "-------------------------------------------------------------------------------
+nnoremap <silent> <F4> :let @+=expand("<cfile>")<CR>
 nnoremap <silent> <F5> :let @+=substitute(getline('.'), '^["#] \\|^!', '', '')<CR>
 nnoremap <silent> <F6> :exec '!'.getline('.')
 nnoremap <silent> <F7> :exec append(line('.'), split(system(getline('.')), '[\n\r]\+'))
